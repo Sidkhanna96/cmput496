@@ -1,0 +1,64 @@
+= Go1
+
+= 2
+
+= 0.1
+
+= genmove komi name legal_moves clear_board protocol_version play list_commands version set_free_handicap boardsize hello quit known_command showboard
+
+= 
+
+= 
+
+= 
+
+= 
+
+= 
+
+= 
+
+= e3
+
+= 
+
+= h14
+
+= 
+
+= l14
+
+= 
+
+= f6
+
+= 
+
+= s16
+
+= 
+
+= l7
+
+= 
+
+= k11
+
+= 
+
+= j12
+
+= 
+
+= n16
+
+= 
+
+= r17
+
+= 
+
+= o19
+
+= 
+

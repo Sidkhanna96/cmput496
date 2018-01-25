@@ -1,0 +1,71 @@
+boardsize 9
+clear_board
+komi 7.5
+play W C9
+play W D9
+play W D8
+play W D7
+play W E8
+play W F8
+play W G7
+play W E6
+play W F6
+play W F5
+play W E4
+play W F4
+play W G4
+play W F3
+play W F1
+play W G1
+play W G2
+play B B9
+play B B8
+play B C8
+play B C7
+play B D6
+play B D5
+play B D4
+play B D3
+play B E5
+play B E3
+play B E2
+play B E1
+play B F2
+10 score
+#?[W\+14.5]
+
+boardsize 7
+clear_board
+komi 0.5
+play W A5
+play W B5
+play W C5
+play W C4
+play W C3
+play W C2
+play W C1
+play W A2
+play W D7
+play W D6
+play W E6
+play W F6
+play W G6
+play W F7
+play W G7
+play B B7
+play B A6
+play B B6
+play B C6
+play B D5
+play B E5
+play B F5
+play B G5
+play B D4
+play B D3
+play B D2
+play B E2
+play B E1
+play B F3
+play B G2
+20 score
+#?[B\+0.5]

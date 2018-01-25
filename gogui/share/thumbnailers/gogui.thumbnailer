@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=/c/Users/siddhant/Desktop/CMPUT4962/gogui/bin/gogui-thumbnailer
+Exec=/c/Users/siddhant/Desktop/CMPUT4962/gogui/bin/gogui-thumbnailer -size %s %i %o
+MimeType=application/x-go-sgf;application/x-go+xml;
