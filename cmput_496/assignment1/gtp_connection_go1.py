@@ -11,6 +11,7 @@ from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, FLOODFILL
 import gtp_connection
 import numpy as np
 import re
+from collections import defaultdict
 
 class GtpConnectionGo1(gtp_connection.GtpConnection):
 
@@ -112,13 +113,41 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
 	    	Territory = self.dfs(dictionary, next(iter(dictionary)), [])
     		for n in Territory:
     			dictionary.pop(n)
-    		print(Territory)
     		list_Territory.append(Territory)
     		Territory = []
 
+    	# print(list_Territory, '\n')
+    	color_territory = []
+    	color_of_territory = []
+    	# dictionary_color_territory = defaultdict(list)
 
-    	self.respond("Score")   
+    	for ter in list_Territory:
+       		for val in ter:
+       			check_color = (GoBoard._neighbors(val))
+       			for i in check_color:
+       				if(GoBoard.get_color(i) == 1 or GoBoard.get_color(i) == 2):
+       					color_territory.append(GoBoard.get_color(i))
+       		# print(color_territory)
+       		color_of_territory.append(color_territory)
+       		color_territory = []
 
+    	print(list_Territory, '\n\n', color_of_territory)
+
+    	size_of_territory = []
+    	color = []
+    	i=0
+
+    	while(i < len(list_Territory)):
+    		size_of_territory.append(len(list_Territory[i]))
+    		if 1 not in color_of_territory[i]:
+    			color.append('W')
+    		elif 2 not in color_of_territory[i]:
+    			color.append('B')
+    		else:
+    			color.append('N')
+    		i = i + 1
+
+    	print(size_of_territory, "\n\n", color)
 
     def dfs(self, graph, node, visited):
     	if node not in visited:
