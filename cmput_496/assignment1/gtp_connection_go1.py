@@ -37,88 +37,111 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
         self.respond("Hello! " + self.go_engine.name)
 
     def score(self, args):	
-    	# EmptyPoints = []
-    	# GoBoard = self.board.get_twoD_board()
-    	# for row in range(len(GoBoard)):
-    	# 	for position in range(len(GoBoard[row])):
-    	# 		if(GoBoard[row][position] == 0):
-    	# 			value =  self.board.NS*row + position
-    	# 			EmptyPoints.append(value)
+        # EmptyPoints = []
+        # GoBoard = self.board.get_twoD_board()
+        # for row in range(len(GoBoard)):
+        # 	for position in range(len(GoBoard[row])):
+        # 		if(GoBoard[row][position] == 0):
+        # 			value =  self.board.NS*row + position
+        # 			EmptyPoints.append(value)
 
-    	# print(EmptyPoints)
-    	# print(self.board.get_empty_positions(1))
+        # print(EmptyPoints)
+        # print(self.board.get_empty_positions(1))
 
-    	GoBoard = self.board
+        GoBoard = self.board
 
-    	black = GoBoard.get_empty_positions(1)
-    	white = GoBoard.get_empty_positions(2)
-
-    	# print(black)
-    	# print(white)
-    	
-    	empty = list(set(black).union(white))
-
-    	valid_moves_empty = []
-    	valid_position = []
-
-    	for positions in empty:
-    		neighbours = GoBoard._neighbors(positions)
-    		for i in neighbours:
-    			if(i in empty):
-    				valid_position.append(i)
-    		valid_moves_empty.append(valid_position)
-    		valid_position = []
-
-    	# print(empty)
-    	# print(valid_moves_empty)
-
-    	dictionary = {}
-
-    	# print(len(empty), len(valid_moves_empty))
-
-    	for i in range(len(empty)):
-    		dictionary[empty[i]] = valid_moves_empty[i]
-
-    	# Empty points: Valid neighbours
-    	# print(dictionary)
-
-    	list_Territory = []
-    	Territory = []
-
-    	#print(next(iter(dictionary.values())))
-    	#print(next(iter(dictionary)))
-    	
-    	# print(dictionary)
-
-    	#so we need to add the empty values into the territory
-
-    	# while(len(dictionary) > 0):
-    	# 	# print(next(iter(dictionary)))
-    	# 	# dictionary.pop(next(iter(dictionary)))
-
-    	# 	#The first dictionary key
-    	# 	Territory.append(next(iter(dictionary)))
-    	# 	# (next(iter(dictionary.values())))
-
-    	# 	for i in next(iter(dictionary.values())):
-    	# 		if i not in Territory:
-    	# 			Territory.append(i)
+        # Initalize Variables
+        whiteposition = 2
+        whitescore = self.komi
+        blackposition = 1
+        blackscore = 0
 
 
-    	# 	dictionary.pop(next(iter(dictionary)))
+        # Count of Stones
+        for row in GoBoard.get_twoD_board():
+            for position in row:
+                if(position == whiteposition):
+                    whitescore +=1
+                elif(position == blackposition):
+                    blackscore +=1
 
-    	# Territory.append(next(iter(dictionary)))
-    	while(len(dictionary) > 0):
-	    	Territory = self.dfs(dictionary, next(iter(dictionary)), [])
-    		for n in Territory:
-    			dictionary.pop(n)
-    		print(Territory)
-    		list_Territory.append(Territory)
-    		Territory = []
+        black = GoBoard.get_empty_positions(1)
+        white = GoBoard.get_empty_positions(2)
 
 
-    	self.respond("Score")   
 
+        # print(black)
+        # print(white)
+
+        empty = list(set(black).union(white))
+
+        valid_moves_empty = []
+        valid_position = []
+
+        for positions in empty:
+        	neighbours = GoBoard._neighbors(positions)
+        	for i in neighbours:
+        		if(i in empty):
+        			valid_position.append(i)
+        	valid_moves_empty.append(valid_position)
+        	valid_position = []
+
+        # print(empty)
+        # print(valid_moves_empty)
+
+        dictionary = {}
+
+        # print(len(empty), len(valid_moves_empty))
+
+        for i in range(len(empty)):
+        	dictionary[empty[i]] = valid_moves_empty[i]
+
+        # Empty points: Valid neighbours
+        # print(dictionary)
+
+        list_Territory = []
+        Territory = []
+
+        #print(next(iter(dictionary.values())))
+        #print(next(iter(dictionary)))
+
+        # print(dictionary)
+
+        #so we need to add the empty values into the territory
+
+        # while(len(dictionary) > 0):
+        # 	# print(next(iter(dictionary)))
+        # 	# dictionary.pop(next(iter(dictionary)))
+
+        # 	#The first dictionary key
+        # 	Territory.append(next(iter(dictionary)))
+        # 	# (next(iter(dictionary.values())))
+
+        # 	for i in next(iter(dictionary.values())):
+        # 		if i not in Territory:
+        # 			Territory.append(i)
+
+
+        # 	dictionary.pop(next(iter(dictionary)))
+
+        # Territory.append(next(iter(dictionary)))
+        while(len(dictionary) > 0):
+        	Territory = self.dfs(dictionary, next(iter(dictionary)), [])
+        	for n in Territory:
+        		dictionary.pop(n)
+        	print(Territory)
+        	list_Territory.append(Territory)
+        	Territory = []
+
+
+        ############# ############# #############
+        # Final print score logic DO NOT CHANGE
+        if(blackscore>whitescore):
+            self.respond(' B+' + str(blackscore))
+        elif (blackscore<whitescore):
+            self.respond(' W+' + str(whitescore))
+        else:
+            self.respond(' ' + str(0))
 
     def dfs(self, graph, node, visited):
     	if node not in visited:
