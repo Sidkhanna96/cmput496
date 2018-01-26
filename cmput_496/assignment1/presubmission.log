@@ -1,0 +1,54 @@
+Script started on Fri Jan 26 02:40:03 2018
+[?1034hbash-3.2$ tar -xzf aq[K1.tgz [K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kmkdir temp [Kfolder
+bash-3.2$ tar -xzf a1.tgz -C tempfolder/
+bash-3.2$ ls
+Go0			assignment1		util
+Go1			presubmission.log
+a1.tgz			tempfolder
+bash-3.2$ cd tempfolder/
+bash-3.2$ ls
+assignment1
+bash-3.2$ cd assignment1/
+bash-3.2$ ls
+Go1.py					gtp_connection_go1.py
+assignment1-public-tests.gtp		gtp_log
+assignment1-public-tests.gtp.html	index.html
+assignment1-public-tests.gtp.out.html	summary.dat
+commands.gtp
+bash-3.2$ lscd [K[K[K[K[Kcd ..
+bash-3.2$ ls
+assignment1
+bash-3.2$ cd ..
+bash-3.2$ ls
+Go0			assignment1		util
+Go1			presubmission.log
+a1.tgz			tempfolder
+bash-3.2$ cp util/ tempfolder/assignment1/[K[K[K[K[K[K[K[K[K[K[K[K
+cp: util/ is a directory (not copied).
+bash-3.2$ cp util/ tempfolder/[1P tempfolder/[C[C[C[C[C
+cp: util is a directory (not copied).
+bash-3.2$ cp util tempfolder/[1@-[1@r[1@ [C[C[C[C/ tempfolder/
+bash-3.2$ ls
+Go0			assignment1		util
+Go1			presubmission.log
+a1.tgz			tempfolder
+bash-3.2$ cd tempfolder/
+bash-3.2$ ls
+__pycache__		board_util.py		simple_board.py
+assignment1		gtp_connection.py
+bash-3.2$ mkdir util
+bash-3.2$ mv board_util.py [K[K[K[K[K[K[K[K[K[K[K[K[K[K*.py unt[K[Ktil/
+bash-3.2$ ls
+__pycache__	assignment1	util
+bash-3.2$ cd assignment1/
+bash-3.2$ ls
+Go1.py					gtp_connection_go1.py
+assignment1-public-tests.gtp		gtp_log
+assignment1-public-tests.gtp.html	index.html
+assignment1-public-tests.gtp.out.html	summary.dat
+commands.gtp
+bash-3.2$ gogui-regress ./Go1.py gtp[K[K[Kassignment1-public-tests.gtp
+bash-3.2$ cat [K[K[K[Kexit
+exit
+
+Script done on Fri Jan 26 02:43:24 2018
