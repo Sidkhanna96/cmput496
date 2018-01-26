@@ -36,8 +36,7 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
         """ Dummy Hello Command """
         self.respond("Hello! " + self.go_engine.name)
 
-    def score(self, args):
-    	
+    def score(self, args):	
     	# EmptyPoints = []
     	# GoBoard = self.board.get_twoD_board()
     	# for row in range(len(GoBoard)):
@@ -89,7 +88,7 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
     	#print(next(iter(dictionary.values())))
     	#print(next(iter(dictionary)))
     	
-    	print(dictionary)
+    	# print(dictionary)
 
     	#so we need to add the empty values into the territory
 
@@ -108,5 +107,22 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
 
     	# 	dictionary.pop(next(iter(dictionary)))
 
-    	Territory.append(next(iter(dictionary)))
+    	# Territory.append(next(iter(dictionary)))
+    	while(len(dictionary) > 0):
+	    	Territory = self.dfs(dictionary, next(iter(dictionary)), [])
+    		for n in Territory:
+    			dictionary.pop(n)
+    		print(Territory)
+    		list_Territory.append(Territory)
+    		Territory = []
 
+
+    	self.respond("Score")   
+
+
+    def dfs(self, graph, node, visited):
+    	if node not in visited:
+    		visited.append(node)
+    		for n in graph[node]:
+    			self.dfs(graph, n, visited)
+    	return visited

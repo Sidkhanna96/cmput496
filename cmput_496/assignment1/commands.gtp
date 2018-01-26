@@ -1,9 +1,21 @@
 play b b1
+play w c1
 play b b2
+play w c2
 play b b3
+play w c3
 play b b4
+play w c4
 play b c5
+play w d5
 play b c6
+play w d6
 play b d7
+play w e7
+play b e1
+play b e2
+play b f2
+play b g2
+play b g1
 showboard
 score
