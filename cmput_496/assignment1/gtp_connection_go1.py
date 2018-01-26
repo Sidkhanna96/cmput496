@@ -129,7 +129,7 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
        		color_of_territory.append(color_territory)
        		color_territory = []
 
-        print(list_Territory, '\n\n', color_of_territory)
+        # print(list_Territory, '\n\n', color_of_territory)
 
         size_of_territory = []
         color = []
@@ -137,23 +137,20 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
 
         while(i < len(list_Territory)):
         	size_of_territory.append(len(list_Territory[i]))
-        	if 1 not in color_of_territory[i]:
-        		color.append('W')
-        	elif 2 not in color_of_territory[i]:
-        		color.append('B')
-        	else:
-        		color.append('N')
+        	if 1 not in color_of_territory[i]: whitescore += size_of_territory[i]
+        	elif 2 not in color_of_territory[i]: blackscore += size_of_territory[i]
+
         	i = i + 1
-        print(size_of_territory, "\n\n", color)
+        # print(size_of_territory, "\n\n", color)
         
 
 
         ############# ############# #############
         # Final print score logic DO NOT CHANGE
         if(blackscore>whitescore):
-            self.respond(' B+' + str(blackscore))
+            self.respond(' B+' + str(blackscore-whitescore))
         elif (blackscore<whitescore):
-            self.respond(' W+' + str(whitescore))
+            self.respond(' W+' + str(whitescore-blackscore))
         else:
             self.respond(' ' + str(0))
 
