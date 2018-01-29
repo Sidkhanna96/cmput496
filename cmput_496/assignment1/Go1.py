@@ -1,4 +1,4 @@
-#C:\Users\siddhant\AppData\Local\Programs\Python\Python35-32\python
+#!/usr/bin/python3
 # Set the path to your python3 above
 
 # Set up relative path for util; sys.path[0] is directory of current program
