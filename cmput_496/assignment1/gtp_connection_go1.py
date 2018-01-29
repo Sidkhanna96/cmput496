@@ -148,9 +148,9 @@ class GtpConnectionGo1(gtp_connection.GtpConnection):
         ############# ############# #############
         # Final print score logic DO NOT CHANGE
         if(blackscore>whitescore):
-            self.respond(' B\+' + str(blackscore-whitescore))
+            self.respond(' B+' + str(blackscore-whitescore))
         elif (blackscore<whitescore):
-            self.respond(' W\+' + str(whitescore-blackscore))
+            self.respond(' W+' + str(whitescore-blackscore))
         else:
             self.respond(' ' + str(0))
 
