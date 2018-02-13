@@ -1,5 +1,5 @@
-cmput_496/Assignment1/__pycache__/
-cmput_496/util/__pycache__/
+cmput_496/**/__pycache__/
+cmput_496/**/**/__pycache__/
 cmput_496/**/*.html
 cmput_496/**/*.log
 cmput_496/**/*.dat

@@ -30,6 +30,9 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         gtp_connection.GtpConnection.__init__(self, go_engine, board, outfile, debug_mode)
         self.commands["go_safe"] = self.safety_cmd
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
+        self.commands["timelimit"] = self.timelimit
+        self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
+        self.timelimit = 1
 
     def safety_cmd(self, args):
         try:
@@ -40,5 +43,19 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
                 x,y = self.board._point_to_coord(point)
                 safety_points.append(GoBoardUtil.format_point((x,y)))
             self.respond(safety_points)
+        except Exception as e:
+            self.respond('Error: {}'.format(str(e)))
+
+    def timelimit(self,args):
+        try:
+            if(args[0].isalpha()):
+                raise ValueError("Value Is Not A Number")
+            if(len(args)>1 or len(args[0])>1):
+                raise ValueError("Invalid command line arguments")
+
+            seconds = int(args[0])
+            if(seconds>100 or seconds<1):
+                raise ValueError("Value Is Out Of Bounds")
+            self.timelimit = seconds
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
