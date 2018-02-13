@@ -1,0 +1,55 @@
+# Name: assignment2-test1.gtp
+boardsize 7
+clear_board
+komi 0.5
+play B B7
+play W F1
+play B B6
+play W F2
+play B B5
+play W F3
+play B B4
+play W F4
+play B B3
+play W F5
+play B B2
+play W F6
+play B B1
+play W F7
+play B C1
+play W E7
+play B D1
+play W D7
+play B A4
+play W G4
+play B A6
+play W G6
+play B A2
+play W G2
+play B D2
+play W D6
+play B D3
+play W D5
+play B D4
+play W C5
+play B E4
+play W E1
+play B C7
+play W E2
+play B C6
+play W E3
+play B E5
+10 solve
+#?[b]
+play W C4
+20 solve
+#?[b c2|b c3|b e6]
+play B C3
+30 solve
+#?[b]
+play W E6
+40 solve
+#?[b pass]
+komi 1.5
+50 solve
+#?[w]
