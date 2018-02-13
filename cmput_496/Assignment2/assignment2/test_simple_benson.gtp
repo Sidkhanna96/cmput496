@@ -1,0 +1,51 @@
+boardsize 7
+clear_board
+komi 7.5
+play B B6
+play B C6
+play B B5
+play B B4
+play B C4
+play B D5
+play B D7
+play B E7
+play B E6
+play B E5
+10 go_safe b
+#?[\['b4', 'c4', 'b5', 'b6', 'c6', 'd5', 'e5', 'e6', 'e7', 'd7', 'c5', 'd6'\]]
+
+boardsize 7
+clear_board
+play B A6
+play B B6
+play B B7
+play B C6
+play B D6
+play B D7
+20 go_safe b
+#?[\['a6', 'b6', 'c6', 'b7', 'd6', 'd7', 'a7', 'c7'\]]
+
+boardsize 7
+clear_board
+play B A7
+play B B6
+play B C7
+play B C6
+play B A5
+play B A4
+play B A3
+play B B5
+30 go_safe b
+#?[\['a3', 'a4', 'a5', 'b5', 'b6', 'c6', 'c7', 'a7', 'a6', 'b7'\]]
+
+boardsize 7
+clear_board
+play B A6
+play B B6
+play B C6
+play B D6
+play B E7
+play B C7
+play B E6
+40 go_safe b
+#?[\[\]]
