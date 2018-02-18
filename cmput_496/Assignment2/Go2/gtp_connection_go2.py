@@ -31,6 +31,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.commands["go_safe"] = self.safety_cmd
         self.commands["timelimit"] = self.timelimit
         self.commands["genmove"] = self.genmove
+        self.commands["solve"] = self.solve
 
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
@@ -49,7 +50,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
-    def timelimit(self,args):
+    def timelimit(self,*args):
         """
         This command sets the maximum time to use for all following genmove or solve commands
 
@@ -58,12 +59,14 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         args[0] : {seconds}
         """
         try:
-            if(args[0].isalpha()):
+            # print(args[0])
+            if(args[0][0].isalpha()):
                 raise ValueError("Value Is Not A Number")
             if(len(args)>1 or len(args[0])>1):
                 raise ValueError("Invalid command line arguments")
 
-            seconds = int(args[0])
+            seconds = int(args[0][0])
+            # print(seconds)
             if(seconds>100 or seconds<1):
                 raise ValueError("Value Is Out Of Bounds")
             self.timelimit = seconds
@@ -110,8 +113,57 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             self.respond(board_move)
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
-    
 
-    dev solve(self,player,timelimt):
-        # Need to implement
-        pass
+
+    def resultForBlack(self):
+        result = self.negamaxBoolean()
+        if self.board.current_player == BLACK:
+            return result
+        else:
+            return not result
+
+    def solve(self, args): 
+        global DRAW_WINNER
+        DRAW_WINNER = WHITE
+        win = self.resultForBlack()
+        if win:
+            return BLACK
+        else:
+            DRAW_WINNER = BLACK
+            winOrDraw = self.resultForBlack(self)
+            if winOrDraw:
+                return EMPTY
+            else:
+                return WHITE
+
+    def color_check(self):
+        if(self.board.current_player == 2):
+            return "w"
+        else:
+            return "b"
+
+    def negamaxBoolean(self):
+        # self.respond(self.legal_moves_cmd(self.color_check())
+        if (len(self.legal_moves_cmd(self.color_check())) == 0):
+            return self.isSuccess()
+        # print(self.legal_moves_cmd(self.color_check()).split(" "))
+        for m in self.legal_moves_cmd(self.color_check()).split(" "):
+            args = [self.color_check(), m]
+            self.play_cmd(args)
+            success = not self.negamaxBoolean()
+            self.board.undo_move()
+            self.respond(self.board.undo_move())
+            if success:
+                return True
+        return False
+
+    DRAW_WINNER = BLACK
+
+
+    def isSuccess(self):
+        global DRAW_WINNER
+        #black
+        color = self.score_cmd(self.color_check())
+        # B + 24
+        return (   color == self.board.current_player 
+                or (color == EMPTY and self.board.current_player == DRAW_WINNER))
