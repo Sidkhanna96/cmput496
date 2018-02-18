@@ -269,6 +269,9 @@ class GtpConnection():
             color= GoBoardUtil.color_to_int(board_color)
             moves=GoBoardUtil.generate_legal_moves(self.board,color)
             self.respond(moves)
+            if(len(moves)==None):
+                return 0
+            return moves
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
@@ -286,6 +289,7 @@ class GtpConnection():
         args[1] : str
             the move to play (e.g. A5)
         """
+        # self.respond(args)
         try:
             board_color = args[0].lower()
             board_move = args[1]
@@ -360,4 +364,6 @@ class GtpConnection():
         if winner is None:
             result="0"
         self.respond(result)
+        return winner
+
 

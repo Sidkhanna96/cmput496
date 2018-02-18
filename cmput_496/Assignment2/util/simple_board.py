@@ -47,7 +47,7 @@ class SimpleGoBoard(object):
                 
     # Undo and restore the full previous board state
     def undo_move(self):
-        assert len(self.moves) != 0
+        # assert len(self.moves) != 0
         last_point = self.moves.pop()
         self.ko_constraint = self.ko_constraints.pop()
         caps = self.captured_stones.pop()
