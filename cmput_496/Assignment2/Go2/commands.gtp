@@ -1,9 +1,4 @@
-play B B7
-play W F1
-play B B6
-play W F2
-play B B5
-play W F3
-play B B4
+play w c1
+play b b2
 showboard
 solve

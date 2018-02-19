@@ -4,6 +4,8 @@ Module for playing games of Go using GoTextProtocol
 This code is based off of the gtp module in the Deep-Go project
 by Isaac Henrion and Aamos Storkey at the University of Edinburgh.
 """
+from multiprocessing import Process
+import time
 import traceback
 import sys
 import os
@@ -37,6 +39,11 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
         self.argmap["genmove"] = (1, 'Usage: genmove {player}')
         self.timelimit = 1
+        self.count=0
+        self.final_winner=[]
+        self.dic={}
+
+
 
     def safety_cmd(self, args):
         try:
@@ -116,13 +123,21 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
 
 
     def resultForBlack(self):
-        result = self.negamaxBoolean()
+        result = self.negamaxBoolean(self.board.current_player)
         if self.board.current_player == BLACK:
             return result
         else:
             return not result
 
-    def solve(self, args): 
+    def solve(self,args):
+        p = Process(target=self.solver)
+        p.start()
+        time.sleep(self.timelimit)
+        p.terminate()
+        p.join()
+        print(self.final_winner)
+
+    def solver(self): 
         global DRAW_WINNER
         DRAW_WINNER = WHITE
         win = self.resultForBlack()
@@ -130,7 +145,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return BLACK
         else:
             DRAW_WINNER = BLACK
-            winOrDraw = self.resultForBlack(self)
+            winOrDraw = self.resultForBlack()
             if winOrDraw:
                 return EMPTY
             else:
@@ -141,29 +156,38 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return "w"
         else:
             return "b"
-
-    def negamaxBoolean(self):
+   
+    
+    def negamaxBoolean(self,current_player):
         # self.respond(self.legal_moves_cmd(self.color_check())
-        if (len(self.legal_moves_cmd(self.color_check())) == 0):
-            return self.isSuccess()
-        # print(self.legal_moves_cmd(self.color_check()).split(" "))
+        # if (len(self.legal_moves_cmd(self.color_check())) == 0 or self.legal_moves_cmd(self.color_check())==None):
+        #     return self.isSuccess()        
+        if(self.legal_moves_cmd(self.color_check()).split(" ")==['']):
+            return self.isSuccess(current_player)
         for m in self.legal_moves_cmd(self.color_check()).split(" "):
             args = [self.color_check(), m]
             self.play_cmd(args)
-            success = not self.negamaxBoolean()
+            success = not self.negamaxBoolean(current_player)
             self.board.undo_move()
-            self.respond(self.board.undo_move())
+            #self.respond(self.board.undo_move())
             if success:
+                self.final_winner.append(args)
+                print(self.final_winner)
                 return True
+
+        self.final_winner.append(args[0])
         return False
 
     DRAW_WINNER = BLACK
 
-
-    def isSuccess(self):
+    def isSuccess(self,current_player):
+        global player
+        global player_score
         global DRAW_WINNER
         #black
-        color = self.score_cmd(self.color_check())
+        color = self.board.score(self.go_engine.komi)
+     
+        player = color[0]
+        player_score = color[1]
         # B + 24
-        return (   color == self.board.current_player 
-                or (color == EMPTY and self.board.current_player == DRAW_WINNER))
+        return (player == current_player)

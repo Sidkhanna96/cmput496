@@ -268,7 +268,6 @@ class GtpConnection():
             board_color = args[0].lower()
             color= GoBoardUtil.color_to_int(board_color)
             moves=GoBoardUtil.generate_legal_moves(self.board,color)
-            self.respond(moves)
             if(len(moves)==None):
                 return 0
             return moves
@@ -364,6 +363,5 @@ class GtpConnection():
         if winner is None:
             result="0"
         self.respond(result)
-        return winner
 
 
