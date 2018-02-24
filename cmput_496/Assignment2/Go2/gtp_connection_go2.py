@@ -38,8 +38,9 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
         self.argmap["genmove"] = (1, 'Usage: genmove {player}')
-        self.timelimit = 1
-        self.count=0
+        self.timelimit = 30
+        self.winning = False
+        self.currentplayer = BLACK
         self.final_winner=[]
         self.dic={}
 
@@ -121,9 +122,9 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
-
     def resultForBlack(self):
-        result = self.negamaxBoolean(self.board.current_player)
+        self.currentplayer = self.board.current_player
+        result = self.negamaxBoolean()
         if self.board.current_player == BLACK:
             return result
         else:
@@ -135,21 +136,21 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         time.sleep(self.timelimit)
         p.terminate()
         p.join()
-        print(self.final_winner)
+        self.respond(self.final_winner)
 
     def solver(self): 
         global DRAW_WINNER
         DRAW_WINNER = WHITE
         win = self.resultForBlack()
-        if win:
-            return BLACK
-        else:
-            DRAW_WINNER = BLACK
-            winOrDraw = self.resultForBlack()
-            if winOrDraw:
-                return EMPTY
-            else:
-                return WHITE
+        # if win:
+        #     return BLACK
+        # else:
+        #     DRAW_WINNER = BLACK
+        #     winOrDraw = self.resultForBlack()
+        #     if winOrDraw:
+        #         return EMPTY
+        #     else:
+        #         return WHITE
 
     def color_check(self):
         if(self.board.current_player == 2):
@@ -158,36 +159,51 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return "b"
    
     
-    def negamaxBoolean(self,current_player):
+    def negamaxBoolean(self):
         # self.respond(self.legal_moves_cmd(self.color_check())
         # if (len(self.legal_moves_cmd(self.color_check())) == 0 or self.legal_moves_cmd(self.color_check())==None):
-        #     return self.isSuccess()        
+        #     return self.isSuccess()    
+        S, E, S_eyes = self.board.find_S_and_E(BLACK)
+            
         if(self.legal_moves_cmd(self.color_check()).split(" ")==['']):
-            return self.isSuccess(current_player)
+            return self.isSuccess()
+       
+        if(self.winning == True):
+            return True
         for m in self.legal_moves_cmd(self.color_check()).split(" "):
             args = [self.color_check(), m]
             self.play_cmd(args)
-            success = not self.negamaxBoolean(current_player)
-            self.board.undo_move()
-            #self.respond(self.board.undo_move())
+            success = not self.negamaxBoolean()
+            try:
+                self.board.undo_move()  
+            except:
+                pass
+
             if success:
+                self.winning=True
                 self.final_winner.append(args)
+
                 print(self.final_winner)
                 return True
 
-        self.final_winner.append(args[0])
+            self.final_winner.append(args)
+            print(self.final_winner)
         return False
 
     DRAW_WINNER = BLACK
 
-    def isSuccess(self,current_player):
+    def isSuccess(self):
         global player
         global player_score
         global DRAW_WINNER
         #black
         color = self.board.score(self.go_engine.komi)
-     
+        size = self.board.size**2
+        
         player = color[0]
         player_score = color[1]
-        # B + 24
-        return (player == current_player)
+        
+        if(player_score>size/2):
+            return (player == self.currentplayer)
+        
+        return False
