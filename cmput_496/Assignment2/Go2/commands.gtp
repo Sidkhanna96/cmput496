@@ -1,45 +1,28 @@
-boardsize 7
+boardsize 5
 clear_board
-komi 0.5
-play B B7
-play W F1
-play B B6
-play W F2
-play B B5
-play W F3
-play B B4
-play W F4
-play B B3
-play W F5
-play B B2
-play W F6
-play B B1
-play W F7
-play B C1
-play W E7
-play B D1
-play W D7
-play B A4
-play W G4
-play B A6
-play W G6
-play B A2
-play W G2
-play B D2
-play W D6
-play B D3
-play W D5
-play B D4
-play W C5
-play B E4
-play W E1
-play B C7
-play W E2
-play B C6
-play W E3
-play B E5
-play W C4
-play B C3
-play W E6
-solve
-showboard
+komi 1.5
+10 timelimit 1
+#?[]
+
+play b b5
+play w d5
+play b b4
+play w d4
+play b b3
+play w d3
+play b b2
+play w d2
+play b a2
+play w e2
+play b a4
+play w e4
+play b c1
+timelimit 10
+10 solve 
+#?[w d1|w c2|w c3|w c4|w c5]
+play w c2
+20 solve 
+#?[w]
+play b d1
+30 solve
+#?[w b1|w c3|w c4|w c5|w e1]

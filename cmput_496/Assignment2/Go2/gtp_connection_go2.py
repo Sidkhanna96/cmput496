@@ -39,6 +39,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
         self.argmap["genmove"] = (1, 'Usage: genmove {player}')
         self.timelimit = 30
+        self.time=0
         self.winning = False
         self.currentplayer = BLACK
         self.final_winner=[]
@@ -131,17 +132,28 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return not result
 
     def solve(self,args):
-        p = Process(target=self.solver)
-        p.start()
-        time.sleep(self.timelimit)
-        p.terminate()
-        p.join()
-        self.respond(self.final_winner)
+        self.time = time.time()
+        self.solver()
+    
+        try:
+            length = len(self.final_winner)-1
+            
+            if(self.color_check()==self.final_winner[length][0]):
+                if(self.final_winner[0][0]==self.final_winner[length][0]):
+                    self.respond("{} {}".format(self.final_winner[0][0],self.final_winner[0][1]))
+                else:
+                    self.respond("{} {}".format(self.final_winner[length][0],self.final_winner[length][1]))
+            else:
+                self.respond(self.final_winner[length][0])
+        except:
+            self.respond("unknown")
+        
 
     def solver(self): 
         global DRAW_WINNER
         DRAW_WINNER = WHITE
         win = self.resultForBlack()
+        return
         # if win:
         #     return BLACK
         # else:
@@ -163,13 +175,19 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         # self.respond(self.legal_moves_cmd(self.color_check())
         # if (len(self.legal_moves_cmd(self.color_check())) == 0 or self.legal_moves_cmd(self.color_check())==None):
         #     return self.isSuccess()    
-        S, E, S_eyes = self.board.find_S_and_E(BLACK)
-            
+        #S, E, S_eyes = self.board.find_S_and_E(BLACK)
+        # print(GoBoardUtil.format_point(1,1))
+        # return
+        elapsed_time = time.time() - self.time
+        if(elapsed_time>=self.timelimit):
+            return
+
         if(self.legal_moves_cmd(self.color_check()).split(" ")==['']):
             return self.isSuccess()
        
         if(self.winning == True):
             return True
+            
         for m in self.legal_moves_cmd(self.color_check()).split(" "):
             args = [self.color_check(), m]
             self.play_cmd(args)
@@ -182,12 +200,11 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             if success:
                 self.winning=True
                 self.final_winner.append(args)
-
-                print(self.final_winner)
+                
                 return True
 
             self.final_winner.append(args)
-            print(self.final_winner)
+            
         return False
 
     DRAW_WINNER = BLACK
@@ -204,6 +221,6 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         player_score = color[1]
         
         if(player_score>size/2):
-            return (player == self.currentplayer)
+            return True
         
         return False
