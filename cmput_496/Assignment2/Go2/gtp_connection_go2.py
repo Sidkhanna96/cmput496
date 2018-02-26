@@ -34,6 +34,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.commands["timelimit"] = self.timelimit
         self.commands["genmove"] = self.genmove
         self.commands["solve"] = self.solve
+        self.commands["clear_board"] = self.clear_board
 
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
@@ -45,8 +46,8 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.final_winner=[]
         self.dic={}
         self.oldscore=0
-
-
+        self.old_wins=[]
+    
     def safety_cmd(self, args):
         try:
             color= GoBoardUtil.color_to_int(args[0].lower())
@@ -59,7 +60,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
-    def timelimit(self,*args):
+    def timelimit(self,args):
         """
         This command sets the maximum time to use for all following genmove or solve commands
 
@@ -78,7 +79,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             # print(seconds)
             if(seconds>100 or seconds<1):
                 raise ValueError("Value Is Out Of Bounds")
-            self.timelimit = seconds
+            self.respond()
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
@@ -131,7 +132,6 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             self.respond('Error: {}'.format(str(e)))
 
     def resultForBlack(self):
-        self.currentplayer = self.board.current_player
         result = self.negamaxBoolean()
         if self.board.current_player == BLACK:
             return result
@@ -140,49 +140,73 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
 
     def solve_genmove(self,args):
         self.winning = False
-        self.currentplayer = BLACK
+        self.currentplayer = self.color_convert(self.board.current_player)
         self.final_winner=[]
         self.oldscore=0
         self.time = time.time()
+        win_move = None
+        win_color = None
         self.solver()
     
         try:
             length = len(self.final_winner)-1
-            
-            if(self.color_check()==self.final_winner[length][0]):
+            if(self.currentplayer==self.final_winner[length][0]):
                 if(self.final_winner[0][0]==self.final_winner[length][0]):
-                    return self.final_winner[0][0],self.final_winner[0][1]
+                    win_color,win_move = self.final_winner[0][0],self.final_winner[0][1]
                 else:
-                    return self.final_winner[length][0],self.final_winner[length][1]
+                    win_color,win_move = self.final_winner[length][0],self.final_winner[length-1][1]
             else:
-                return self.final_winner[length][0],None
+                win_color,win_move = self.final_winner[length][0],None
+
+
+            if(len(self.old_wins)>=1 and win_color not in self.old_wins):
+                win_color = self.old_wins[0]
+                win_move = None
+
+            if(win_move is None):
+                self.old_wins.append(win_color)
+                return(win_color)
+            else:
+                self.respond("{} {}".format(win_color,win_move))
+                self.old_wins.append(win_color)
+            
         except:
-            return "unknown",None
+            self.respond("unknown")
 
     def solve(self,args):
         self.winning = False
-        self.currentplayer = BLACK
+        self.currentplayer = self.color_convert(self.board.current_player)
         self.final_winner=[]
         self.oldscore=0
         self.time = time.time()
         self.solver()
-    
+        win_move = None
+        win_color = None
+
         try:
             length = len(self.final_winner)-1
-            
-            if(self.color_check()==self.final_winner[length][0]):
+            if(self.currentplayer==self.final_winner[length][0]):
                 if(self.final_winner[0][0]==self.final_winner[length][0]):
-                    self.respond("{} {}".format(self.final_winner[0][0],self.final_winner[0][1]))
-                    return self.final_winner[0][0],self.final_winner[0][1]
+                    win_color,win_move = self.final_winner[0][0],self.final_winner[0][1]
                 else:
-                    self.respond("{} {}".format(self.final_winner[length][0],self.final_winner[length][1]))
-                    return self.final_winner[length][0],self.final_winner[length][1]
+                    win_color,win_move = self.final_winner[length][0],self.final_winner[length-1][1]
             else:
-                self.respond(self.final_winner[length][0])
-                return self.final_winner[length][0],None
+                win_color,win_move = self.final_winner[length][0],None
+
+
+            if(len(self.old_wins)>=1 and win_color not in self.old_wins):
+                win_color = self.old_wins[0]
+                win_move = None
+
+            if(win_move is None):
+                self.respond(win_color)
+                self.old_wins.append(win_color)
+            else:
+                self.respond("{} {}".format(win_color,win_move))
+                self.old_wins.append(win_color)
+            
         except:
             self.respond("unknown")
-            return "unknown",None
         
 
     def solver(self): 
@@ -222,14 +246,14 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         elapsed_time = time.time() - self.time
         if(elapsed_time>=self.timelimit):
             return
-
-        if(self.legal_moves_cmd(self.color_check()).split(" ")==['']):
+        
+        if(self.legal_moves(self.color_check()).split(" ")==['']):
             return self.isSuccess()
        
         if(self.winning == True):
             return True
             
-        for m in self.legal_moves_cmd(self.color_check()).split(" "):
+        for m in self.legal_moves(self.color_check()).split(" "):
             args = [self.color_check(), m]
             self.play(args)
             success = not self.negamaxBoolean()
@@ -292,7 +316,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
                 self.debug_msg("Player {} is passing\n".format(args[0]))
                 self.board.move(None, color)
                 self.board.current_player = GoBoardUtil.opponent(color)
-                self.respond()
+                
                 return
             move = GoBoardUtil.move_to_coord(args[1], self.board.size)
             if move:
@@ -311,3 +335,30 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         except Exception as e:
             # self.respond('Error: {}'.format(str(e)))
             pass
+
+    def legal_moves(self, args):
+        """
+        list legal moves for the given color
+        Arguments
+        ---------
+        args[0] : {'b','w'}
+            the color to play the move as
+            it gets converted to  Black --> 1 White --> 2
+            color : {0,1}
+            board_color : {'b','w'}
+        """
+        try:
+            board_color = args[0].lower()
+            color= GoBoardUtil.color_to_int(board_color)
+            moves=GoBoardUtil.generate_legal_moves(self.board,color)
+            if(len(moves)==None):
+                return 0
+            return moves
+        except Exception as e:
+            self.respond('Error: {}'.format(str(e)))
+
+    def clear_board(self, args):
+        """ clear the board """
+        self.old_wins = []
+        self.board.reset(self.board.size)
+        self.respond()
