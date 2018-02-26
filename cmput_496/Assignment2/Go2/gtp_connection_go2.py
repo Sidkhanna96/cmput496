@@ -44,7 +44,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.currentplayer = BLACK
         self.final_winner=[]
         self.dic={}
-
+        self.oldscore=0
 
 
     def safety_cmd(self, args):
@@ -102,12 +102,19 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             color = GoBoardUtil.color_to_int(board_color)
             self.debug_msg("Board:\n{}\nko: {}\n".format(str(self.board.get_twoD_board()),
                                                           self.board.ko_constraint))
+            
+            solver_color,solver_move = self.solve("1")
             move = self.go_engine.get_move(self.board, color)
             if move is None:
                 self.respond("pass")
                 return
 
-            if not self.board.check_legal(move, color):
+            if(solver_color==self.color_convert(color)):
+                moves = list(GoBoardUtil.move_to_coord(solver_move,self.board.size))
+                solver_move = self.board._coord_to_point(moves[0],moves[1])
+                move = solver_move
+
+            elif not self.board.check_legal(move, color):
                 move = self.board._point_to_coord(move)
                 board_move = GoBoardUtil.format_point(move)
                 self.respond("Illegal move: {}".format(board_move))
@@ -132,6 +139,10 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return not result
 
     def solve(self,args):
+        self.winning = False
+        self.currentplayer = BLACK
+        self.final_winner=[]
+        self.oldscore=0
         self.time = time.time()
         self.solver()
     
@@ -141,12 +152,16 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             if(self.color_check()==self.final_winner[length][0]):
                 if(self.final_winner[0][0]==self.final_winner[length][0]):
                     self.respond("{} {}".format(self.final_winner[0][0],self.final_winner[0][1]))
+                    return self.final_winner[0][0],self.final_winner[0][1]
                 else:
                     self.respond("{} {}".format(self.final_winner[length][0],self.final_winner[length][1]))
+                    return self.final_winner[length][0],self.final_winner[length][1]
             else:
                 self.respond(self.final_winner[length][0])
+                return self.final_winner[length][0],None
         except:
             self.respond("unknown")
+            return "unknown",None
         
 
     def solver(self): 
@@ -170,6 +185,11 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         else:
             return "b"
    
+    def color_convert(self,color):
+        if(color == 2):
+            return "w"
+        else:
+            return "b"
     
     def negamaxBoolean(self):
         # self.respond(self.legal_moves_cmd(self.color_check())
@@ -213,6 +233,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         global player
         global player_score
         global DRAW_WINNER
+       
         #black
         color = self.board.score(self.go_engine.komi)
         size = self.board.size**2
@@ -220,7 +241,9 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         player = color[0]
         player_score = color[1]
         
-        if(player_score>size/2):
+        if(player_score>size/2 and player_score>self.oldscore):
+            self.oldscore = player_score
             return True
         
+        self.oldscore = player_score
         return False
