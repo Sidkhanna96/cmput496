@@ -103,7 +103,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             self.debug_msg("Board:\n{}\nko: {}\n".format(str(self.board.get_twoD_board()),
                                                           self.board.ko_constraint))
             
-            solver_color,solver_move = self.solve("1")
+            solver_color,solver_move = self.solve_genmove("1")
             move = self.go_engine.get_move(self.board, color)
             if move is None:
                 self.respond("pass")
@@ -137,6 +137,27 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return result
         else:
             return not result
+
+    def solve_genmove(self,args):
+        self.winning = False
+        self.currentplayer = BLACK
+        self.final_winner=[]
+        self.oldscore=0
+        self.time = time.time()
+        self.solver()
+    
+        try:
+            length = len(self.final_winner)-1
+            
+            if(self.color_check()==self.final_winner[length][0]):
+                if(self.final_winner[0][0]==self.final_winner[length][0]):
+                    return self.final_winner[0][0],self.final_winner[0][1]
+                else:
+                    return self.final_winner[length][0],self.final_winner[length][1]
+            else:
+                return self.final_winner[length][0],None
+        except:
+            return "unknown",None
 
     def solve(self,args):
         self.winning = False
@@ -210,7 +231,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             
         for m in self.legal_moves_cmd(self.color_check()).split(" "):
             args = [self.color_check(), m]
-            self.play_cmd(args)
+            self.play(args)
             success = not self.negamaxBoolean()
             try:
                 self.board.undo_move()  
@@ -247,3 +268,46 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         
         self.oldscore = player_score
         return False
+    
+    def play(self, args):
+        """
+        play a move as the given color
+
+        Arguments
+        ---------
+        args[0] : {'b','w'}
+            the color to play the move as
+            it gets converted to  Black --> 1 White --> 2
+            color : {0,1}
+            board_color : {'b','w'}
+        args[1] : str
+            the move to play (e.g. A5)
+        """
+        # self.respond(args)
+        try:
+            board_color = args[0].lower()
+            board_move = args[1]
+            color= GoBoardUtil.color_to_int(board_color)
+            if args[1].lower()=='pass':
+                self.debug_msg("Player {} is passing\n".format(args[0]))
+                self.board.move(None, color)
+                self.board.current_player = GoBoardUtil.opponent(color)
+                self.respond()
+                return
+            move = GoBoardUtil.move_to_coord(args[1], self.board.size)
+            if move:
+                move = self.board._coord_to_point(move[0],move[1])
+            # move == None on pass
+            else:
+                self.error("Error in executing the move %s, check given move: %s"%(move,args[1]))
+                return
+            if not self.board.move(move, color):
+                pass
+                # self.respond("Illegal Move: {}".format(board_move))
+                return
+            else:
+                self.debug_msg("Move: {}\nBoard:\n{}\n".format(board_move, str(self.board.get_twoD_board())))
+            
+        except Exception as e:
+            # self.respond('Error: {}'.format(str(e)))
+            pass
