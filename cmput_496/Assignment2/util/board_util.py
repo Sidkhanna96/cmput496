@@ -5,6 +5,7 @@ BORDER = 3
 FLOODFILL = 4
 import numpy as np
 import random
+import copy
 
 class GoBoardUtil(object):
     
@@ -159,17 +160,6 @@ class GoBoardUtil(object):
     @staticmethod
     def copyb2b(board,copy_board):
         """Return an independent copy of this Board."""
-        copy_board.board = np.copy(board.board)
-        copy_board.check_suicide = board.check_suicide
-        copy_board.winner = board.winner 
-        copy_board.NS = board.NS
-        copy_board.WE = board.WE
-        copy_board._is_empty = board._is_empty
-        copy_board.passes_black = board.passes_black
-        copy_board.passes_white = board.passes_white
-        copy_board.current_player = board.current_player
-        copy_board.ko_constraint =  board.ko_constraint 
-        copy_board.white_captures = board.white_captures
-        copy_board.black_captures = board.black_captures 
-
-        
+        copy_board.__dict__ = copy.deepcopy(board.__dict__)
+        assert copy_board.board.all() == board.board.all()
+        return copy_board

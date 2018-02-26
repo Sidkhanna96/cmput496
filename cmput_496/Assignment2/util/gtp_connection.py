@@ -33,7 +33,7 @@ class GtpConnection():
         self.file = open(outfile, mode)
         #self.stderr = sys.stderr
         sys.stdout = self
-        self.go_engine = go_engine 
+        self.go_engine = go_engine
         self.go_engine.komi = 0
         self.board = board
         self.commands = {
@@ -65,14 +65,14 @@ class GtpConnection():
             "play": (2, 'Usage: play {b,w} MOVE'),
             "legal_moves": (1, 'Usage: legal_moves {w,b}')
         }
-    
+
     def __del__(self):
         sys.stdout = self.stdout
         self.file.close()
 
     def write(self, data):
         self.file.write(data)
-        self.stdout.write(data) 
+        self.stdout.write(data)
 
     def flush(self,):
         self.stdout.flush()
@@ -268,9 +268,8 @@ class GtpConnection():
             board_color = args[0].lower()
             color= GoBoardUtil.color_to_int(board_color)
             moves=GoBoardUtil.generate_legal_moves(self.board,color)
-            if(len(moves)==None):
-                return 0
-            return moves
+            #print("hihih "+str(board_color))
+            self.respond(moves)
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
@@ -288,7 +287,6 @@ class GtpConnection():
         args[1] : str
             the move to play (e.g. A5)
         """
-        # self.respond(args)
         try:
             board_color = args[0].lower()
             board_move = args[1]
@@ -363,5 +361,3 @@ class GtpConnection():
         if winner is None:
             result="0"
         self.respond(result)
-
-

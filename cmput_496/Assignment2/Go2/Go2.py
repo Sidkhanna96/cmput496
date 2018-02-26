@@ -1,4 +1,4 @@
-#!/anaconda/bin/python3
+#!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 # Set the path to your python3 above
 
 # Set up relative path for util; sys.path[0] is directory of current program
@@ -28,7 +28,7 @@ class Go2():
 
     def get_move(self,board, color):
         return GoBoardUtil.generate_random_move(board,color,True)
-    
+
 
 def run():
     """

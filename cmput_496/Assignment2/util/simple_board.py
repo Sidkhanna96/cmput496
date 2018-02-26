@@ -3,7 +3,7 @@ glossary:
     point : int
         coordinate of point on the board
     color : int
-        color code of the point represented in interger, 
+        color code of the point represented in interger,
         imported from board utility
         EMPTY = 0
         BLACK = 1
@@ -15,9 +15,8 @@ glossary:
 
 import numpy as np
 import copy
-from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, FLOODFILL 
+from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, FLOODFILL
 import sys
-# The default recursion limit may be too small for search 
 sys.setrecursionlimit(1000000)
 
 class SimpleGoBoard(object):
@@ -30,6 +29,7 @@ class SimpleGoBoard(object):
         Return:
         color
         """
+        previous_pass=self.num_pass
         move_inspection, msg, caps = self._play_move(point,color)
         if not move_inspection:
             return False
@@ -38,21 +38,24 @@ class SimpleGoBoard(object):
             self.moves.append(point)
             self.ko_constraints.append(self.ko_constraint)
             self.captured_stones.append(caps)
+            self.pass_record.append(previous_pass)
             # update played and captured positions to the empty positions
             if point:
                 self._empty_positions.remove(point)
             if caps is not None:
                 self._empty_positions.extend(caps)
             return True
-                
+
     # Undo and restore the full previous board state
     def undo_move(self):
-        # assert len(self.moves) != 0
+        assert len(self.moves) != 0
         last_point = self.moves.pop()
         self.ko_constraint = self.ko_constraints.pop()
         caps = self.captured_stones.pop()
+        self.num_pass=self.pass_record.pop()
         if last_point != None:
             self.board[last_point] = EMPTY
+            self.liberty_dp[last_point] = -1
             self._empty_positions.append(last_point)
             c = self.current_player
             for p in caps:
@@ -109,7 +112,7 @@ class SimpleGoBoard(object):
     def get_twoD_board(self):
         """
         Return: numpy array
-        a two dimensional numpy array with same values as in 
+        a two dimensional numpy array with same values as in
         self.board but without the borders
         """
         board = np.zeros((self.size,self.size),dtype=np.int32)
@@ -134,13 +137,13 @@ class SimpleGoBoard(object):
         """
             Creates an initial board position
             reset the board to a new size
-            
+
             Arguments
             ---------
             size : int
             size of board to reset to
             """
-        
+
         self.name = "Board 1D"
         self.version = 0.1
         self.size = size
@@ -156,32 +159,33 @@ class SimpleGoBoard(object):
         self.current_player= BLACK
         self.winner = None
         self.num_pass = 0
-        self.maxpoint = size*size + 3*(size+1)  
+        self.maxpoint = size*size + 3*(size+1)
         self.liberty_dp = np.ones((self.maxpoint),dtype=np.int16)*-1
         self.moves = [] # stack of moves
         self.ko_constraints = [] # stack of ko constraines
         self.captured_stones = [] # stacke of captured stones
+        self.pass_record = []
         """
-        The board array is one-dimensional 
+        The board array is one-dimensional
         Conversion from row, col format: see _coord_to_point function
         This is an example point numbering (indices of numpy array)
-        on a 3x3 board. Spaces are added for illustration to separate 
+        on a 3x3 board. Spaces are added for illustration to separate
         board points from border points.
         There is only a one point buffer between each row (e.g. point 12).
-        
+
         16   17 18 19   20
-        
+
         12   13 14 15   16
         08   09 10 11   12
         04   05 06 07   08
-        
+
         00   01 02 03   04
-        
+
         This is the content of the array after initialization,
         if we copy it into a 2d array with padding.
         Codes are EMPTY = 0, BORDER = 3
         [ 3, 3, 3, 3, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3, 3, 3]
-        
+
         3  3  3  3  3
         3  0  0  0  3
         3  0  0  0  3
@@ -202,7 +206,7 @@ class SimpleGoBoard(object):
 
     def _neighbors(self,point):
         return self.neighbors_dic[point]
-    
+
     def _neighbor_pos(self, point):
         return [point-1, point+1, point-self.NS, point+self.NS]
 
@@ -269,15 +273,15 @@ class SimpleGoBoard(object):
         if false_count >= 2:
             return None
         return eye_color
-    
+
     """
-------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------------------------------------
     helper functions for playing a move!
-   ------------------------------------------------------------------------------
+    ----------------------------------------------------------------------------------------------------------------------
     """
     def _is_eyeish(self,point):
         """
-        returns whether the position is empty and is surrounded by 
+        returns whether the position is empty and is surrounded by
         all stones of the same color.
         Arguments
         ---------
@@ -288,7 +292,7 @@ class SimpleGoBoard(object):
         bool:
              whether the neighbors of the point all have same color
         This is based on https://github.com/pasky/michi/blob/master/michi.py --> is_eyeish
-        
+
         """
         eye_color = None
         for n in self._neighbors(point):
@@ -302,7 +306,7 @@ class SimpleGoBoard(object):
                 if self.board[n] != eye_color:
                     return None
         return eye_color
-    
+
     def _single_liberty(self, point, color):
         """
         This functions returns point that is last liberty of a point
@@ -324,7 +328,7 @@ class SimpleGoBoard(object):
 
     def _liberty_point(self, point, color):
         """
-        Helper function for returning number of liberty and 
+        Helper function for returning number of liberty and
         last liberty for the point
         """
         group_points = [point]
@@ -337,7 +341,7 @@ class SimpleGoBoard(object):
             for n in neighbors:
                 if n not in met_points:
                     assert self.board[n] != BORDER
-                    if self.board[n] == color: 
+                    if self.board[n] == color:
                         group_points.append(n)
                     elif self.board[n]==EMPTY:
                         liberty += 1
@@ -352,12 +356,10 @@ class SimpleGoBoard(object):
         neighbors = self._neighbors(point)
         for n in neighbors:
             if fboard[n] == EMPTY:
-                self.liberty_dp[point] = n
                 return True,n
             if fboard[n] == color:
                 res,lp=self._liberty_flood_rec(fboard,n,color)
                 if res:
-                    self.liberty_dp[point] = lp
                     return True, lp
         return False, None
 
@@ -376,11 +378,14 @@ class SimpleGoBoard(object):
         """
         dp_point=self.liberty_dp[point]
         if dp_point != -1 and self.board[dp_point] == EMPTY:
-            return True, None
+            return True, dp_point
         fboard = np.array(self.board, copy=True)
         color = fboard[point]
-        res,_ = self._liberty_flood_rec(fboard,point,color)
-        return res, fboard
+        res,lp = self._liberty_flood_rec(fboard,point,color)
+        if(res==True):
+            return res, lp
+        else:
+            return res, fboard
 
 
     def _flood_fill(self, point):
@@ -392,7 +397,7 @@ class SimpleGoBoard(object):
 
         Return
         ---------
-         a new board with points in the neighbor of given point 
+         a new board with points in the neighbor of given point
          with same color replaced with
          FLOODFILL(=4)
          This is based on https://github.com/pasky/michi/blob/master/michi.py --> floodfill
@@ -417,12 +422,12 @@ class SimpleGoBoard(object):
             Arguments
             ---------
             point, color
-            
+
             Return
             ---------
             State of move and appropriate message for that move
             """
-        
+
         if point == None: #play a pass move
             msg = "Playing a pass move with %s color is permitted"%(color)
             self.num_pass += 1
@@ -465,21 +470,29 @@ class SimpleGoBoard(object):
                         self.liberty_dp[cap_inds] = -1
                         self.board[cap_inds] = EMPTY
         self.ko_constraint = single_captures[0] if in_enemy_eye and len(single_captures) == 1 else None
-        if (not self.check_suicide) or self._liberty_flood(point)[0]:
-            #non suicidal move
+        if (not self.check_suicide):
+            #not check suicidal move
             c = self._point_to_coord(point)
             msg = "Playing a move with %s color in the row and column %d %d is permitted"%(color,c[0],c[1])
             return True, msg, caps
         else:
-            # undoing the move because of being suicidal
-            # think cap_inds must be None?
-            self.board[point] = EMPTY
-            if cap_inds!= None:
-                self.board[cap_inds] = GoBoardUtil.opponent(color)
-            c = self._point_to_coord(point)
-            msg = "Suicide move with color %s in the row and column: %d %d "%(color, c[0],c[1])
-            return False, msg, None
-    
+            res,lp=self._liberty_flood(point)
+            if res==True:
+                #non suicidal move
+                self.liberty_dp[point]=lp
+                c = self._point_to_coord(point)
+                msg = "Playing a move with %s color in the row and column %d %d is permitted"%(color,c[0],c[1])
+                return True, msg, caps
+            else:
+                # undoing the move because of being suicidal
+                # think cap_inds must be None?
+                self.board[point] = EMPTY
+                if cap_inds!= None:
+                    self.board[cap_inds] = GoBoardUtil.opponent(color)
+                c = self._point_to_coord(point)
+                msg = "Suicide move with color %s in the row and column: %d %d "%(color, c[0],c[1])
+                return False, msg, None
+
     def _diag_neighbors(self, point):
         """
         All diagonal neighbors of the point
@@ -629,40 +642,40 @@ class SimpleGoBoard(object):
                     black_score += len(empty_block)
                 if white_flag and not black_flag:
                     white_score += len(empty_block)
-    
+
         if black_score > white_score:
             return BLACK, black_score-white_score
 
         if white_score > black_score:
             return WHITE, white_score-black_score
-        
+
         if black_score == white_score:
             return None, 0
 
     """
-    We implement a simplified version of Benson's algorithm 
+    We implement a simplified version of Benson's algorithm
     to determine which stones are safe.
-    Given a board and a color, the algorithm could determine 
+    Given a board and a color, the algorithm could determine
     for the input color of player, which
     blocks of stones are safe on the board.
-    
+
     Please refer to https://en.wikipedia.org/wiki/Benson%27s_algorithm_(Go)
     and https://senseis.xmp.net/?BensonsAlgorithm
-    
+
     Let S be the set of all blocks of stones.
     Let E be the set of all one point eyes.
-    
+
     The algorithm has two parts:
-    
+
     1. find S and E (the find_S_and_E function)
-    
-    2. For each s in S, if it connects to less than 2 one point eyes in E, 
+
+    2. For each s in S, if it connects to less than 2 one point eyes in E,
        then remove s from S, as well as its connected one point eye (if any)
        from E. Continue this process until no change can be made
        (the find_safety function)
-    
-    Note that this is only a simplifed version, since E only contains 
-    the one point eyes. You can implement the full version of Benson's 
+
+    Note that this is only a simplifed version, since E only contains
+    the one point eyes. You can implement the full version of Benson's
     algorithm based on the links we provided above.
     """
     def find_S_and_E(self, color):
@@ -672,16 +685,16 @@ class SimpleGoBoard(object):
         E: set of all one point eyes
         """
         E = {} # For each one point eye, record the blocks it connects
-        S = {} # Each block is indexed by its anchor, which is the 
+        S = {} # Each block is indexed by its anchor, which is the
                # smallest point in the block
         S_eyes = {} # For each block, record one point eyes it connects
-        
+
         # find E
-        for x in range(1, self.size+1):
-            for y in range(1, self.size+1):
-                point = self._coord_to_point(x,y)
-                if self.is_eye(point, color):
-                    E[point] = set()
+        empty_points = self.get_empty_points()
+        for point in empty_points:
+            if self.is_eye(point, color):
+                E[point] = set()
+
         # find S
         anchor_dic = {}
         for x in range(1, self.size+1):
@@ -720,7 +733,7 @@ class SimpleGoBoard(object):
 
     def find_safety(self, color):
         """
-        This function implements a simplified version of 
+        This function implements a simplified version of
         Benson's algorithm for unconditional safety.
         S: set of all blocks
         E: set of all one point eyes
