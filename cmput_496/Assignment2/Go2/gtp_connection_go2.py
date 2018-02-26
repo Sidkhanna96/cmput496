@@ -4,6 +4,8 @@ Module for playing games of Go using GoTextProtocol
 This code is based off of the gtp module in the Deep-Go project
 by Isaac Henrion and Aamos Storkey at the University of Edinburgh.
 """
+from multiprocessing import Process
+import time
 import traceback
 import sys
 import os
@@ -36,7 +38,14 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
         self.argmap["genmove"] = (1, 'Usage: genmove {player}')
-        self.timelimit = 1
+        self.timelimit = 30
+        self.time=0
+        self.winning = False
+        self.currentplayer = BLACK
+        self.final_winner=[]
+        self.dic={}
+        self.oldscore=0
+
 
     def safety_cmd(self, args):
         try:
@@ -93,12 +102,19 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             color = GoBoardUtil.color_to_int(board_color)
             self.debug_msg("Board:\n{}\nko: {}\n".format(str(self.board.get_twoD_board()),
                                                           self.board.ko_constraint))
+            
+            solver_color,solver_move = self.solve_genmove("1")
             move = self.go_engine.get_move(self.board, color)
             if move is None:
                 self.respond("pass")
                 return
 
-            if not self.board.check_legal(move, color):
+            if(solver_color==self.color_convert(color)):
+                moves = list(GoBoardUtil.move_to_coord(solver_move,self.board.size))
+                solver_move = self.board._coord_to_point(moves[0],moves[1])
+                move = solver_move
+
+            elif not self.board.check_legal(move, color):
                 move = self.board._point_to_coord(move)
                 board_move = GoBoardUtil.format_point(move)
                 self.respond("Illegal move: {}".format(board_move))
@@ -114,56 +130,184 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
-
     def resultForBlack(self):
+        self.currentplayer = self.board.current_player
         result = self.negamaxBoolean()
         if self.board.current_player == BLACK:
             return result
         else:
             return not result
 
-    def solve(self, args): 
+    def solve_genmove(self,args):
+        self.winning = False
+        self.currentplayer = BLACK
+        self.final_winner=[]
+        self.oldscore=0
+        self.time = time.time()
+        self.solver()
+    
+        try:
+            length = len(self.final_winner)-1
+            
+            if(self.color_check()==self.final_winner[length][0]):
+                if(self.final_winner[0][0]==self.final_winner[length][0]):
+                    return self.final_winner[0][0],self.final_winner[0][1]
+                else:
+                    return self.final_winner[length][0],self.final_winner[length][1]
+            else:
+                return self.final_winner[length][0],None
+        except:
+            return "unknown",None
+
+    def solve(self,args):
+        self.winning = False
+        self.currentplayer = BLACK
+        self.final_winner=[]
+        self.oldscore=0
+        self.time = time.time()
+        self.solver()
+    
+        try:
+            length = len(self.final_winner)-1
+            
+            if(self.color_check()==self.final_winner[length][0]):
+                if(self.final_winner[0][0]==self.final_winner[length][0]):
+                    self.respond("{} {}".format(self.final_winner[0][0],self.final_winner[0][1]))
+                    return self.final_winner[0][0],self.final_winner[0][1]
+                else:
+                    self.respond("{} {}".format(self.final_winner[length][0],self.final_winner[length][1]))
+                    return self.final_winner[length][0],self.final_winner[length][1]
+            else:
+                self.respond(self.final_winner[length][0])
+                return self.final_winner[length][0],None
+        except:
+            self.respond("unknown")
+            return "unknown",None
+        
+
+    def solver(self): 
         global DRAW_WINNER
         DRAW_WINNER = WHITE
         win = self.resultForBlack()
-        if win:
-            return BLACK
-        else:
-            DRAW_WINNER = BLACK
-            winOrDraw = self.resultForBlack(self)
-            if winOrDraw:
-                return EMPTY
-            else:
-                return WHITE
+        return
+        # if win:
+        #     return BLACK
+        # else:
+        #     DRAW_WINNER = BLACK
+        #     winOrDraw = self.resultForBlack()
+        #     if winOrDraw:
+        #         return EMPTY
+        #     else:
+        #         return WHITE
 
     def color_check(self):
         if(self.board.current_player == 2):
             return "w"
         else:
             return "b"
-
+   
+    def color_convert(self,color):
+        if(color == 2):
+            return "w"
+        else:
+            return "b"
+    
     def negamaxBoolean(self):
         # self.respond(self.legal_moves_cmd(self.color_check())
-        if (len(self.legal_moves_cmd(self.color_check())) == 0):
+        # if (len(self.legal_moves_cmd(self.color_check())) == 0 or self.legal_moves_cmd(self.color_check())==None):
+        #     return self.isSuccess()    
+        #S, E, S_eyes = self.board.find_S_and_E(BLACK)
+        # print(GoBoardUtil.format_point(1,1))
+        # return
+        elapsed_time = time.time() - self.time
+        if(elapsed_time>=self.timelimit):
+            return
+
+        if(self.legal_moves_cmd(self.color_check()).split(" ")==['']):
             return self.isSuccess()
-        # print(self.legal_moves_cmd(self.color_check()).split(" "))
+       
+        if(self.winning == True):
+            return True
+            
         for m in self.legal_moves_cmd(self.color_check()).split(" "):
             args = [self.color_check(), m]
-            self.play_cmd(args)
+            self.play(args)
             success = not self.negamaxBoolean()
-            self.board.undo_move()
-            self.respond(self.board.undo_move())
+            try:
+                self.board.undo_move()  
+            except:
+                pass
+
             if success:
+                self.winning=True
+                self.final_winner.append(args)
+                
                 return True
+
+            self.final_winner.append(args)
+            
         return False
 
     DRAW_WINNER = BLACK
 
-
     def isSuccess(self):
+        global player
+        global player_score
         global DRAW_WINNER
+       
         #black
-        color = self.score_cmd(self.color_check())
-        # B + 24
-        return (   color == self.board.current_player 
-                or (color == EMPTY and self.board.current_player == DRAW_WINNER))
+        color = self.board.score(self.go_engine.komi)
+        size = self.board.size**2
+        
+        player = color[0]
+        player_score = color[1]
+        
+        if(player_score>size/2 and player_score>self.oldscore):
+            self.oldscore = player_score
+            return True
+        
+        self.oldscore = player_score
+        return False
+    
+    def play(self, args):
+        """
+        play a move as the given color
+
+        Arguments
+        ---------
+        args[0] : {'b','w'}
+            the color to play the move as
+            it gets converted to  Black --> 1 White --> 2
+            color : {0,1}
+            board_color : {'b','w'}
+        args[1] : str
+            the move to play (e.g. A5)
+        """
+        # self.respond(args)
+        try:
+            board_color = args[0].lower()
+            board_move = args[1]
+            color= GoBoardUtil.color_to_int(board_color)
+            if args[1].lower()=='pass':
+                self.debug_msg("Player {} is passing\n".format(args[0]))
+                self.board.move(None, color)
+                self.board.current_player = GoBoardUtil.opponent(color)
+                self.respond()
+                return
+            move = GoBoardUtil.move_to_coord(args[1], self.board.size)
+            if move:
+                move = self.board._coord_to_point(move[0],move[1])
+            # move == None on pass
+            else:
+                self.error("Error in executing the move %s, check given move: %s"%(move,args[1]))
+                return
+            if not self.board.move(move, color):
+                pass
+                # self.respond("Illegal Move: {}".format(board_move))
+                return
+            else:
+                self.debug_msg("Move: {}\nBoard:\n{}\n".format(board_move, str(self.board.get_twoD_board())))
+            
+        except Exception as e:
+            # self.respond('Error: {}'.format(str(e)))
+            pass
