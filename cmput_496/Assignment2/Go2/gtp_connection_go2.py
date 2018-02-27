@@ -109,7 +109,6 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             if move is None:
                 self.respond("pass")
                 return
-
             if(solver_color==self.color_convert(color)):
                 moves = list(GoBoardUtil.move_to_coord(solver_move,self.board.size))
                 solver_move = self.board._coord_to_point(moves[0],moves[1])
@@ -162,15 +161,11 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
                 win_color = self.old_wins[0]
                 win_move = None
 
-            if(win_move is None):
-                self.old_wins.append(win_color)
-                return(win_color)
-            else:
-                self.respond("{} {}".format(win_color,win_move))
-                self.old_wins.append(win_color)
+            self.old_wins.append(win_color)
+            return win_color,win_move
             
         except:
-            self.respond("unknown")
+            return "unknown",None
 
     def solve(self,args):
         self.winning = False
@@ -238,6 +233,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             return "w"
         else:
             return "b"
+    
     
     def negamaxBoolean(self):
         # self.respond(self.legal_moves_cmd(self.color_check())
