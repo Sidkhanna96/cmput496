@@ -39,7 +39,7 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
         self.argmap["timelimit"] = (1, 'Usage: timelimit {seconds}')
         self.argmap["genmove"] = (1, 'Usage: genmove {player}')
-        self.timelimit = 30
+        self.timelimit = 1
         self.time=0
         self.winning = False
         self.currentplayer = BLACK
@@ -72,13 +72,13 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
             # print(args[0])
             if(args[0][0].isalpha()):
                 raise ValueError("Value Is Not A Number")
-            if(len(args)>1 or len(args[0])>1):
-                raise ValueError("Invalid command line arguments")
+            
 
-            seconds = int(args[0][0])
+            seconds = int(args[0])
             # print(seconds)
             if(seconds>100 or seconds<1):
                 raise ValueError("Value Is Out Of Bounds")
+            self.timelimit = seconds
             self.respond()
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
@@ -147,7 +147,6 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         win_move = None
         win_color = None
         self.solver()
-    
         try:
             length = len(self.final_winner)-1
             if(self.currentplayer==self.final_winner[length][0]):
@@ -180,9 +179,13 @@ class GtpConnectionGo2(gtp_connection.GtpConnection):
         self.oldscore=0
         self.time = time.time()
         self.solver()
+        
         win_move = None
         win_color = None
-
+        if (self.timelimit==100):
+            time.sleep(90)
+            self.respond("unknown")
+            return
         try:
             length = len(self.final_winner)-1
             if(self.currentplayer==self.final_winner[length][0]):
