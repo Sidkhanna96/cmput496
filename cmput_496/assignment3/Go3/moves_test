@@ -1,0 +1,4 @@
+play b a2
+play w a1
+showboard
+policy_moves
