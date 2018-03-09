@@ -812,13 +812,22 @@ class SimpleGoBoard(object):
             nb_list += [d for d in nb_of_c_list if self.board[d] == EMPTY and d not in nb_list]
         return nb_list
 
-    def last_moves(self):
+    def last_moves_empty(self):
         nb_list = []
-        if(self.last_move != None):
-            for c in self.last_move:
-                if c is None:  continue
-                nb_of_c_list = list(self._neighbors(c))
-                nb_list += [d for d in nb_of_c_list if self.board[d] == EMPTY and d not in nb_list]
+        c = self.last_move
+
+        if c is None:  return
+        nb_of_c_list = list(self._neighbors(c) + self._diag_neighbors(c))
+        nb_list += [d for d in nb_of_c_list if self.board[d] == EMPTY and d not in nb_list]
+        return nb_list
+
+    def last_moves(self,move):
+        nb_list = []
+        c = move
+
+        if c is None:  return
+        nb_of_c_list = list(self._neighbors(c) + self._diag_neighbors(c))
+        nb_list += [d for d in nb_of_c_list if self.board[d] == EMPTY and d not in nb_list]
         return nb_list
 
     def point_to_string(self, point):

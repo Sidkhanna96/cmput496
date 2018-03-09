@@ -190,11 +190,14 @@ class GoBoardUtil(object):
     
     @staticmethod  
     def atari_capture(board):
-        print(board.last_moves_empty_neighbors())
-        value = (board._neighbor_pos(board.last_moves))
-        if(len(value)==1):
-            return value[0]
-        return None
+        # print(board.last_moves_empty_neighbors())
+        # value = (board._neighbor_pos(board.last_moves()))
+        # for point in value:
+        #     print(point_to_coord(point))
+        # if(len(value)==1):
+        #     return value[0]
+        # return None
+        pass
 
 
     @staticmethod
@@ -207,26 +210,33 @@ class GoBoardUtil(object):
             generate a list of policy moves on board for board.current_player.
             Use in UI only. For playing, use generate_move_with_filter
             which is more efficient
-        """
-        if board.last_moves() != None:
-            return_value = []
-            return_value = GoBoardUtil.atari_capture(board)
-            if(return_value != None):
-                return_value = GoBoardUtil.filter_moves(board, return_value, check_selfatari)
-                return return_value, "Atari Capture"
+        """    
+        #ATARI CAPTURE 
+        if board.last_move != None:
+            moves = board.last_moves_empty()
+            diagonal = board._diag_neighbors(board.last_move)
+            capture_moves = list(set(moves) - set(diagonal))
+            capture_moves = GoBoardUtil.filter_moves(board,capture_moves, check_selfatari)
+            if(len(capture_moves)==1):
+                return capture_moves, 'AtariCapture'
+            
+            # ATARI DEFENCE
             else:
-                pass
-            # else:
-            #     return_defense_value = []
-            #     return_defense_value = atari_defense(board)
-            #     return_defense_value = GoBoardUtil.filter_moves(board, return_defense_value, check_selfatari)
-            #     if(return_defense_value != None):
-            #         return return_defense_value, "Atari Defense"
+                defence_moves=[]
+                moves = board._neighbors(board.last_move)
+                print(moves)
+                
+                for move in moves:
+                    print(board._point_to_coord(move))
+                    if(board._single_liberty(move,board.current_player)!=None):
+                        defence_moves.append(board._single_liberty(move,board.current_player))
+                        
+                if(defence_moves != []):
+                    return defence_moves, 'AtariDefence'
 
         if pattern:
             pattern_moves = []
             pattern_moves = GoBoardUtil.generate_pattern_moves(board)
-            # print(pattern_moves)
             pattern_moves = GoBoardUtil.filter_moves(board, pattern_moves, check_selfatari)
             if len(pattern_moves) > 0:
                 return pattern_moves, "Pattern"
