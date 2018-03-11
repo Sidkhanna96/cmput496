@@ -210,6 +210,7 @@ class SimpleGoBoard(object):
                 self.neighbors_dic[p].append(n)
 
     def _neighbors(self,point):
+    
         return self.neighbors_dic[point]
     
     def _neighbor_pos(self, point):
@@ -512,6 +513,31 @@ class SimpleGoBoard(object):
         """
         return [point-self.NS-1, point-self.NS+1,
                 point+self.NS-1, point+self.NS+1]
+
+    def _diag_neighbors2(self,point):
+        
+        final_points = []
+
+        lc = self._point_to_coord(point-self.NS-1)
+        rc = self._point_to_coord(point-self.NS+1)
+        ldc = self._point_to_coord(point+self.NS-1)
+        rdc = self._point_to_coord(point+self.NS+1)
+
+        if(lc[0]>=0 and lc[0]<=self.size and lc[1]>=0 and lc[1]<=self.size):
+            print(lc)
+            final_points.append(point-self.NS-1)
+
+        if(rc[0]>=0 and rc[0]<=self.size and rc[1]>=0 and rc[1]<=self.size):
+            print(rc)
+            final_points.append(point-self.NS+1)
+        if(ldc[0]>=0 and ldc[0]<=self.size and ldc[1]>=0 and ldc[1]<=self.size):
+            print(ldc)
+            final_points.append(point+self.NS-1)
+        if(rdc[0]>=0 and rdc[0]<=self.size and rdc[1]>=0 and rdc[1]<=self.size):
+            print(rdc)
+            final_points.append(point+self.NS+1)
+
+        return final_points
 
     def _border_removal(self, points):
         """

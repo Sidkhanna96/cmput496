@@ -224,12 +224,13 @@ class GoBoardUtil(object):
             else:
                 defence_moves=[]
                 moves = board._neighbors(board.last_move)
+                moves.extend(board._diag_neighbors2(board.last_move))
                 print(moves)
+        
                 
                 for move in moves:
-                    print(board._point_to_coord(move))
-                    if(board._single_liberty(move,board.current_player)!=None):
-                        defence_moves.append(board._single_liberty(move,board.current_player))
+                    print(board._single_liberty(move,board.current_player))
+                        # defence_moves.append(board._single_liberty(move,board.current_player))
                         
                 if(defence_moves != []):
                     return defence_moves, 'AtariDefence'
