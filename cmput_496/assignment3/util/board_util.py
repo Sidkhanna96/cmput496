@@ -211,29 +211,7 @@ class GoBoardUtil(object):
             Use in UI only. For playing, use generate_move_with_filter
             which is more efficient
         """    
-        #ATARI CAPTURE 
-        if board.last_move != None:
-            moves = board.last_moves_empty()
-            diagonal = board._diag_neighbors(board.last_move)
-            capture_moves = list(set(moves) - set(diagonal))
-            capture_moves = GoBoardUtil.filter_moves(board,capture_moves, check_selfatari)
-            if(len(capture_moves)==1):
-                return capture_moves, 'AtariCapture'
-            
-            # ATARI DEFENCE
-            else:
-                defence_moves=[]
-                moves = board._neighbors(board.last_move)
-                moves.extend(board._diag_neighbors2(board.last_move))
-                print(moves)
-        
-                
-                for move in moves:
-                    print(board._single_liberty(move,board.current_player))
-                        # defence_moves.append(board._single_liberty(move,board.current_player))
-                        
-                if(defence_moves != []):
-                    return defence_moves, 'AtariDefence'
+
 
         if pattern:
             pattern_moves = []
