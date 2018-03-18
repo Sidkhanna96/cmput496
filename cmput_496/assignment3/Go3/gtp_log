@@ -14,8 +14,6 @@
 
 = AtariDefense e4
 
-= Pattern d4 e4
-
 = 
 [[0 0 0 0 0]
  [0 0 0 0 0]
@@ -28,29 +26,16 @@
 = Pattern d4
 
 = 
-[[0 0 0 0 0]
- [0 0 0 0 0]
- [0 0 0 0 0]
- [0 0 0 0 1]
- [0 0 0 2 1]]
-
-= 
 
 = AtariDefense d4
-
-= Pattern d3 d4
 
 = 
 
 = AtariDefense c5
 
-= Pattern c4 c5 d3
-
 = 
 
 = AtariDefense d3
-
-= Pattern c3 c5 d3
 
 = 
 
@@ -67,8 +52,6 @@
 = 
 
 = AtariDefense b3
-
-= Pattern b2 b3 b4 d2
 
 = 
 
@@ -98,13 +81,9 @@
 
 = 
 
-= AtariDefense e5
-
-= Pattern c2 d2 e3
+= AtariDefense 
 
 = 
 
 = AtariDefense b5
-
-= Pattern b3 b5
 

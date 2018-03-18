@@ -14,12 +14,11 @@ play w d5
 
 30 policy_moves
 #? [AtariDefense e4]
-
+showboard
 play b e4
 
 40 policy_moves
 #? [Pattern d4]
-
 play w e3
 
 50 policy_moves

@@ -99,9 +99,11 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
         #     print(v)
         if len(defence_moves) > 0:
             # defence_moves = GoBoardUtil.filter_moves(self.board,defence_moves, self.go_engine.check_selfatari)
+            defence_moves = GoBoardUtil.filter_moves(self.board,defence_moves, self.go_engine.check_selfatari)
             defence_moves = GoBoardUtil.sorted_point_string(defence_moves, self.board.NS)
             self.respond("AtariDefense " + defence_moves)
-
+            return
+            
         policy_moves, type_of_move = GoBoardUtil.generate_all_policy_moves(self.board,
                                                         self.go_engine.use_pattern,
                                                         self.go_engine.check_selfatari)
