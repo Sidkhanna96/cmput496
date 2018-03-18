@@ -58,29 +58,45 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
                 policy_moves, type_of_move = capture_moves, 'AtariCapture'
                 response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
                 self.respond(response)
-                self.respond("akjhfjkasdhfkjahsd")
+                # self.respond("akjhfjkasdhfkjahsd")
                 return
             
-            # ATARI DEFENCE
-            else:
-                defence_moves=[]
-                moves = self.board._neighbors(self.board.last_move)
-                # moves.extend(board._diag_neighbors2(board.last_move))
+            # # ATARI DEFENCE
+            # else:
+            #     defence_moves=[]
+            #     moves = self.board._neighbors(self.board.last_move)
+            #     # moves.extend(board._diag_neighbors2(board.last_move))
 
         
                 
-                for move in moves:
-                    if(self.board._single_liberty(move,self.board.current_player)!=None):
-                        print(self.board._single_liberty(move,self.board.current_player))
-                        print(self.board._point_to_coord(move))
-                        defence_moves.append(self.board._single_liberty(move,self.board.current_player))
+            #     for move in moves:
+            #         if(self.board._single_liberty(move,self.board.current_player)!=None):
+            #             # print(self.board._single_liberty(move,self.board.current_player))
+            #             # print(self.board._point_to_coord(move))
+            #             defence_moves.append(self.board._single_liberty(move,self.board.current_player))
                         
-                if(defence_moves != []):
-                    defence_moves  = GoBoardUtil.filter_moves(self.board, defence_moves, self.go_engine.check_selfatari)
-                    policy_moves, type_of_move =  defence_moves, 'AtariDefense'
-                    response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
-                    self.respond(response)
-                    return
+            #     if(defence_moves != []):
+            #         defence_moves  = GoBoardUtil.filter_moves(self.board, defence_moves, self.go_engine.check_selfatari)
+            #         policy_moves, type_of_move =  defence_moves, 'AtariDefense'
+            #         response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
+            #         self.respond(response)
+            #         return
+
+        defence_moves= []
+        lm = self.board.last_move
+        if lm != None:
+            current_play = self.board.current_player
+            for elem in self.board._neighbors(lm):
+                val = GoBoardUtil.color_to_int(self.board._points_color(elem))
+                if current_play == val:
+                    # print(self.board._neighbors(elem))
+                    # if self.board._neighbors(val) != None:
+                    if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
+                        defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+
+        print(defence_moves)
+
+
 
         policy_moves, type_of_move = GoBoardUtil.generate_all_policy_moves(self.board,
                                                         self.go_engine.use_pattern,

@@ -59,7 +59,6 @@ play b d4
 
 120 policy_moves
 #? [AtariCapture e4]
-showboard
 
 play w e4
 
