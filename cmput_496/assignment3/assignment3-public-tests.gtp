@@ -60,7 +60,7 @@ play b d4
 #? [AtariCapture e4]
 
 play w e4
-
+showboard
 130 policy_moves
 #? [Random a1 a2 a4 a5 b1 b2 b3 b4 b5 c1 c5 d1 d2 e1 e2] 
 
@@ -86,7 +86,7 @@ play b d4
 # A real Go program would have a more complex, restricted selfatari rule here.
 
 play w c4
-
+showboard
 160 policy_moves
 #? [AtariDefense b5]
 # Note: the re-capture move d4 is illegal by the ko rule
