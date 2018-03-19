@@ -54,12 +54,14 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
             diagonal = self.board._diag_neighbors(self.board.last_move)
             capture_moves = list(set(moves) - set(diagonal))
             capture_moves = GoBoardUtil.filter_moves(self.board,capture_moves, self.go_engine.check_selfatari)
+
             if(len(capture_moves)==1):
-                policy_moves, type_of_move = capture_moves, 'AtariCapture'
-                response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
-                self.respond(response)
-                # self.respond("akjhfjkasdhfkjahsd")
-                return
+                if(self.board._liberty(capture_moves[0],self.board._points_color(capture_moves[0])) == 1):
+                    policy_moves, type_of_move = capture_moves, 'AtariCapture'
+                    response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
+                    self.respond(response)
+                    # self.respond("akjhfjkasdhfkjahsd")
+                    return
             
             # # ATARI DEFENCE
             # else:
@@ -103,8 +105,7 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
             # defence_moves = GoBoardUtil.filter_moves(self.board,defence_moves, self.go_engine.check_selfatari)
             self.respond("AtariDefense " + defence_moves)
             return
-            
-            
+                 
         policy_moves, type_of_move = GoBoardUtil.generate_all_policy_moves(self.board,
                                                         self.go_engine.use_pattern,
                                                         self.go_engine.check_selfatari)
