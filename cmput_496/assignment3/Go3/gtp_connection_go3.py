@@ -95,7 +95,8 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
                     # print(self.board._neighbors(elem))
                     # if self.board._neighbors(val) != None:
                     if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
-                        defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+                        if(self.board._liberty(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)), GoBoardUtil.int_to_color(val))) > 1:
+                            defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
 
             ng = self.board._neighbors(lm)
             dg = self.board._diag_neighbors(self.board.last_move)

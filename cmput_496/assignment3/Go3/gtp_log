@@ -28,8 +28,6 @@
 
 = 
 
-['e', 'b', 'b']
-b
 = AtariDefense c5 d3
 
 = 
@@ -61,8 +59,13 @@ b
 
 = 
 
-['w', 'e', 'w']
-b
+= 
+[[0 0 0 0 0]
+ [0 0 2 0 0]
+ [1 0 1 2 2]
+ [0 0 2 0 2]
+ [0 0 0 2 0]]
+
 = Random a1 a2 a4 a5 b1 b2 b3 b4 b5 c1 c5 d1 d2 e1 e2
 
 = 
@@ -89,5 +92,5 @@ b
 
 = 
 
-= AtariDefense b5
+= Pattern b3 b5
 
