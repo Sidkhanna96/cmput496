@@ -88,6 +88,7 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
         lm = self.board.last_move
         if lm != None:
             current_play = self.board.current_player
+            opponent = GoBoardUtil.opponent(self.board.current_player)
             for elem in self.board._neighbors(lm):
                 val = GoBoardUtil.color_to_int(self.board._points_color(elem))
                 if current_play == val:
@@ -95,6 +96,18 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
                     # if self.board._neighbors(val) != None:
                     if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
                         defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+
+            ng = self.board._neighbors(lm)
+            dg = self.board._diag_neighbors(self.board.last_move)
+            all_ng = ng + dg
+            # print(all_ng)
+            for elem in all_ng:
+                val = GoBoardUtil.color_to_int(self.board._points_color(elem))
+                if opponent == val:
+                    # print(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+                    if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
+                        defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+
 
         # print(self.board.co defence_moves)
         # for v in defence_moves:

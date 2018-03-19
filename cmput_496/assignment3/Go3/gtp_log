@@ -15,13 +15,6 @@
 = AtariDefense e4
 
 = 
-[[0 0 0 0 0]
- [0 0 0 0 0]
- [0 0 0 0 0]
- [0 0 0 0 0]
- [0 0 0 2 1]]
-
-= 
 
 = Pattern d4
 
@@ -35,7 +28,14 @@
 
 = 
 
-= AtariDefense d3
+= AtariDefense c5 d3
+
+= 
+[[0 0 0 0 0]
+ [0 0 0 0 0]
+ [0 0 0 0 2]
+ [0 0 2 1 1]
+ [0 0 0 2 1]]
 
 = 
 
@@ -59,7 +59,7 @@
 
 = 
 
-= Random a1 a2 a4 a5 b1 b2 b3 b4 b5 c1 c5 d1 d2 e1 e2
+= AtariDefense e2
 
 = 
 
@@ -77,11 +77,11 @@
 
 = 
 
-= AtariCapture d2
+= Pattern c2 d2
 
 = 
 
-= AtariDefense 
+= Pattern c2 d2 e3
 
 = 
 

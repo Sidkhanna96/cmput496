@@ -14,7 +14,6 @@ play w d5
 
 30 policy_moves
 #? [AtariDefense e4]
-showboard
 play b e4
 
 40 policy_moves
@@ -32,6 +31,7 @@ play b d4
 play w c4
 
 70 policy_moves
+showboard
 #? [AtariDefense c5 d3] 
 
 play b a3
