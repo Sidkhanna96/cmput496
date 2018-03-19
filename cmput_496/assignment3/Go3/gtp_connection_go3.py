@@ -44,12 +44,6 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
-    def current_color(self):
-        if(self.board.current_player == 2):
-            return 'w'
-        else:
-            return 'b'
-
     def policy_moves_cmd(self, args):
         """
         Return list of policy moves for the current_player of the board
@@ -107,23 +101,24 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
             dg = self.board._diag_neighbors(self.board.last_move)
             all_ng = ng + dg
             # print(all_ng)
+            count = 0
             for elem in all_ng:
                 val = GoBoardUtil.color_to_int(self.board._points_color(elem))
                 if opponent == val:
                     # print(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
                     if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
-                        
-                        # Check if point is surrounded by other colors or its own color
-                        defence_play = []
-                        move = self.board._single_liberty(elem, GoBoardUtil.int_to_color(val))
-                        move_neighbors = self.board._neighbors(elem)
-                        for point in move_neighbors:
-                            defence_play.append(self.board._points_color(point))
-                        
-                        print(defence_play)
-                        print(self.current_color())
-                        if(self.current_color() in defence_play):    
-                            defence_moves.append(move)
+                        # print(elem)
+                        for i in self.board._neighbors(elem):
+                            # print(i)
+                            val2 = GoBoardUtil.color_to_int(self.board._points_color(i))
+                            if(val2 == opponent):
+                                # print(self.board._liberty(i, GoBoardUtil.int_to_color(val2)))
+                                if(self.board._liberty(i, GoBoardUtil.int_to_color(val2)) != None):
+                                    count += 1
+                        # print(count)
+                        if (count == 0):
+                            defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+                        count = 0
 
 
         # print(self.board.co defence_moves)
