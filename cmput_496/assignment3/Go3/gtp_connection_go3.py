@@ -44,6 +44,12 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
 
+    def current_color(self):
+        if(self.board.current_player == 2):
+            return 'w'
+        else:
+            return 'b'
+
     def policy_moves_cmd(self, args):
         """
         Return list of policy moves for the current_player of the board
@@ -106,7 +112,18 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
                 if opponent == val:
                     # print(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
                     if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
-                        defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+                        
+                        # Check if point is surrounded by other colors or its own color
+                        defence_play = []
+                        move = self.board._single_liberty(elem, GoBoardUtil.int_to_color(val))
+                        move_neighbors = self.board._neighbors(elem)
+                        for point in move_neighbors:
+                            defence_play.append(self.board._points_color(point))
+                        
+                        print(defence_play)
+                        print(self.current_color())
+                        if(self.current_color() in defence_play):    
+                            defence_moves.append(move)
 
 
         # print(self.board.co defence_moves)
