@@ -79,7 +79,7 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
         """
         #ATARI CAPTURE 
         if self.board.last_move != None:
-            moves = self.board.last_moves_empty()
+            moves = self.last_moves_empty()
             diagonal = self.board._diag_neighbors(self.board.last_move)
             capture_moves = list(set(moves) - set(diagonal))
             capture_moves = GoBoardUtil.filter_moves(self.board,capture_moves, self.go_engine.check_selfatari)
@@ -172,13 +172,22 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
             self.respond(response)
             return
 
+    def last_moves_empty(self):
+        nb_list = []
+        c = self.board.last_move
+
+        if c is None:  return
+        nb_of_c_list = list(self.board._neighbors(c) + self.board._diag_neighbors(c))
+        nb_list += [d for d in nb_of_c_list if self.board.board[d] == EMPTY and d not in nb_list]
+        return nb_list
+
     def policy_moves_return_cmd(self, args):
         """
         Return list of policy moves for the current_player of the board
         """
         #ATARI CAPTURE 
         if self.board.last_move != None:
-            moves = self.board.last_moves_empty()
+            moves = self.last_moves_empty()
             diagonal = self.board._diag_neighbors(self.board.last_move)
             capture_moves = list(set(moves) - set(diagonal))
             capture_moves = GoBoardUtil.filter_moves(self.board,capture_moves, self.go_engine.check_selfatari)
