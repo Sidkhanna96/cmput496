@@ -29,8 +29,10 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
         """
         gtp_connection.GtpConnection.__init__(self, go_engine, board, outfile, debug_mode)
         self.commands["go_safe"] = self.safety_cmd
+        self.commands["genmove"] = self.genmove_cmd
         self.commands["policy_moves"] = self.policy_moves_cmd
         self.argmap["go_safe"] = (1, 'Usage: go_safe {w,b}')
+        self.argmap["genmove"] = (1, 'Usage: go_safe {w,b}')
 
     def safety_cmd(self, args):
         try:
@@ -43,7 +45,34 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
             self.respond(safety_points)
         except Exception as e:
             self.respond('Error: {}'.format(str(e)))
+    
+    def genmove_cmd(self,args):
 
+        try:
+            color= GoBoardUtil.color_to_int(args[0].lower())
+            move = self.policy_moves_return_cmd(color)
+            if move is None:
+                self.respond("pass")
+                return
+            print(move)
+            one_move = move[0]
+            print(one_move)
+            if not self.board.check_legal(one_move, color):
+                one_move = self.board._point_to_coord(one_move)
+                board_move = GoBoardUtil.format_point(one_move)
+                self.respond("Illegal move: {}".format(board_move))
+                raise RuntimeError("Illegal move given by engine")
+
+            # move is legal; play it
+            self.board.move(one_move,color)
+
+            self.debug_msg("Move: {}\nBoard: \n{}\n".format(one_move, str(self.board.get_twoD_board())))
+            one_move = self.board._point_to_coord(one_move)
+            board_move = GoBoardUtil.format_point(one_move)
+            self.respond(board_move)
+        except Exception as e:
+            print(e)
+            self.respond('Error: {}'.format(str(e)))
     def policy_moves_cmd(self, args):
         """
         Return list of policy moves for the current_player of the board
@@ -142,3 +171,95 @@ class GtpConnectionGo3(gtp_connection.GtpConnection):
             response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
             self.respond(response)
             return
+
+    def policy_moves_return_cmd(self, args):
+        """
+        Return list of policy moves for the current_player of the board
+        """
+        #ATARI CAPTURE 
+        if self.board.last_move != None:
+            moves = self.board.last_moves_empty()
+            diagonal = self.board._diag_neighbors(self.board.last_move)
+            capture_moves = list(set(moves) - set(diagonal))
+            capture_moves = GoBoardUtil.filter_moves(self.board,capture_moves, self.go_engine.check_selfatari)
+
+            if(len(capture_moves)==1):
+                if(self.board._liberty(capture_moves[0],self.board._points_color(capture_moves[0])) == 1):
+                    policy_moves, type_of_move = capture_moves, 'AtariCapture'
+                    return policy_moves
+    
+            
+            # # ATARI DEFENCE
+            # else:
+            #     defence_moves=[]
+            #     moves = self.board._neighbors(self.board.last_move)
+            #     # moves.extend(board._diag_neighbors2(board.last_move))
+
+        
+                
+            #     for move in moves:
+            #         if(self.board._single_liberty(move,self.board.current_player)!=None):
+            #             # print(self.board._single_liberty(move,self.board.current_player))
+            #             # print(self.board._point_to_coord(move))
+            #             defence_moves.append(self.board._single_liberty(move,self.board.current_player))
+                        
+            #     if(defence_moves != []):
+            #         defence_moves  = GoBoardUtil.filter_moves(self.board, defence_moves, self.go_engine.check_selfatari)
+            #         policy_moves, type_of_move =  defence_moves, 'AtariDefense'
+            #         response = type_of_move + " " + GoBoardUtil.sorted_point_string(policy_moves, self.board.NS)
+            #         return
+
+        defence_moves= []
+        lm = self.board.last_move
+        if lm != None:
+            current_play = self.board.current_player
+            opponent = GoBoardUtil.opponent(self.board.current_player)
+            for elem in self.board._neighbors(lm):
+                val = GoBoardUtil.color_to_int(self.board._points_color(elem))
+                if current_play == val:
+                    # print(self.board._neighbors(elem))
+                    # if self.board._neighbors(val) != None:
+                    if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
+                        # val3 = GoBoardUtil.color_to_int(self.board._points_color(elem))
+                        if self.board._liberty(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)), current_play) > 1:
+                            defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+
+            ng = self.board._neighbors(lm)
+            dg = self.board._diag_neighbors(self.board.last_move)
+            all_ng = ng + dg
+            # print(all_ng)
+            count = 0
+            for elem in all_ng:
+                val = GoBoardUtil.color_to_int(self.board._points_color(elem))
+                if opponent == val:
+                    # print(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+                    if (self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)) != None):
+                        # print(elem)
+                        for i in self.board._neighbors(elem):
+                            # print(i)
+                            val2 = GoBoardUtil.color_to_int(self.board._points_color(i))
+                            if(val2 == opponent):
+                                # print(self.board._liberty(i, GoBoardUtil.int_to_color(val2)))
+                                if(self.board._liberty(i, GoBoardUtil.int_to_color(val2)) != None):
+                                    count += 1
+                        # print(count)
+                        if (count == 0):
+                            defence_moves.append(self.board._single_liberty(elem, GoBoardUtil.int_to_color(val)))
+                        count = 0
+
+
+        # print(self.board.co defence_moves)
+        # for v in defence_moves:
+        #     print(v)
+        defence_moves = GoBoardUtil.filter_moves(self.board,defence_moves, self.go_engine.check_selfatari)
+        if len(defence_moves) > 0:
+            # defence_moves = GoBoardUtil.filter_moves(self.board,defence_moves, self.go_engine.check_selfatari)
+            return defence_moves
+                 
+        policy_moves, type_of_move = GoBoardUtil.generate_all_policy_moves(self.board,
+                                                        self.go_engine.use_pattern,
+                                                        self.go_engine.check_selfatari)
+        if len(policy_moves) == 0:
+            return None
+        else:
+            return policy_moves
