@@ -42,5 +42,70 @@ class GtpConnectionGo5(GtpConnection):
         self.respond("working")
 
     def prior_knowledge_cmd(self,args):
-        self.respond("Working")
-        
+        move, probs = self.probability(self.board)
+
+        print(probs)
+
+
+        # sim_probs = self.sim(probs, move)
+        # # win_rate = self.winrates(probs, move)
+
+        # for elem in move:
+        #     print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], probs[elem])
+
+
+    def sim(self, probs2, move):
+
+        max_prob = max(probs2)
+        for elem in move:
+            probs2[elem] = round(10*probs2[elem]/max_prob)
+
+        return probs2
+
+    def winrates(self, probs3, move):
+        min_val = 0
+        max_val = max(probs3)
+
+        a = 0.5
+        b = 1
+
+        for elem in move:
+            probs3[elem] = self.convert(probs3[elem], min_val, max_val, a, b)
+
+        return probs3
+
+    def convert(self, x, min_val, max_val, a, b):
+        final_value = (((b-a)*(x-min_val))/(max_val-min_val)) + a
+        return final_value
+
+
+    def probability(self, board):
+        from feature import Features_weight
+        from feature import Feature
+        assert len(Features_weight) != 0
+
+        #legal moves
+        moves = []
+
+        gamma_sum = 0.0
+
+        empty_points = board.get_empty_points()
+        # empty_points.append('pass')
+
+        color = board.current_player
+
+        probs = np.zeros(board.maxpoint)
+        # return board.maxpoint
+
+        all_board_features = Feature.find_all_features(board)
+
+        for move in empty_points:
+            if board.check_legal(move, color) and not board.is_eye(move, color):
+                moves.append(move)
+                probs[move] = Feature.compute_move_gamma(Features_weight, all_board_features[move])
+                gamma_sum += probs[move]
+        if len(moves) != 0:
+            assert gamma_sum != 0.0
+            for m in moves:
+                probs[m] = probs[m] / gamma_sum
+        return (moves), (probs)

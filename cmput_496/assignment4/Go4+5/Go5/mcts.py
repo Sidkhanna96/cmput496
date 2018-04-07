@@ -93,39 +93,6 @@ class TreeNode(object):
     def is_root(self):
         return self._parent is None
 
-def probability(board):
-    from feature import Features_weight
-    from feature import Feature
-    assert len(Features_weight) != 0
-
-    moves = []
-    gamma_sum = 0.0
-
-    # empty_points = board.get_empty_points()
-    color = board.current_player
-    
-    legal_moves = Feature.legal_moves_on_board(board)
-    legal_moves.append(PASS)
-
-    probs = np.zeros(board.maxpoint)
-
-    # all_board_features = Feature.find_all_features(board)
-
-    feature_legal_moves = {}
-
-    for move in legal_moves:
-        feature_legal_moves[move] = Feature.find_move_feature(board, move)
-
-    for move in legal_moves:
-            probs[move] = Feature.compute_move_gamma(Features_weight, feature_legal_moves[move])
-            gamma_sum += probs[move]
-
-    
-    if len(legal_moves) != 0:
-        assert gamma_sum != 0.0
-        for m in legal_moves:
-            probs[m] = probs[m] / gamma_sum
-    return legal_moves, probs
 
 
 class MCTS(object):
