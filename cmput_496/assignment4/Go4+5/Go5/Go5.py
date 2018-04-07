@@ -1,4 +1,4 @@
-#!/anaconda/bin/python3
+#!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 import os, sys
 from gtp_connection_go5 import GtpConnectionGo5
 utilpath = sys.path[0] + "/../util/"
@@ -6,7 +6,7 @@ sys.path.append(utilpath)
 utilpath = sys.path[0] + "/../Go4/"
 sys.path.append(utilpath)
 
-from gtp_connection import GtpConnection  
+from gtp_connection import GtpConnection
 from board_util_go4 import GoBoardUtilGo4
 from simple_board import SimpleGoBoard
 from mcts import MCTS
@@ -49,7 +49,7 @@ class Go5Player():
         self.MCTS = MCTS()
         self.num_simulation = num_simulation
         self.limit = limit
-        self.exploration = exploration 
+        self.exploration = exploration
         self.simulation_policy = simulations
         self.use_pattern = True
         self.check_selfatari = move_filter
@@ -74,7 +74,7 @@ class Go5Player():
         self.MCTS = MCTS()
 
     def update(self, move):
-        self.parent = self.MCTS._root 
+        self.parent = self.MCTS._root
         self.MCTS.update_with_move(move)
 
     def get_move(self, board, toplay):
@@ -90,14 +90,14 @@ class Go5Player():
                 in_tree_knowledge = self.in_tree_knowledge)
         self.update(move)
         return move
-    
+
     def get_node_depth(self, root):
         MAX_DEPTH = 100
         nodesAtDepth = [0] * MAX_DEPTH
         count_at_depth(root, 0, nodesAtDepth)
         prev_nodes = 1
         return nodesAtDepth
-    
+
     def get_properties(self):
         return dict(
             version=self.version,
@@ -118,4 +118,3 @@ if __name__=='__main__':
         sys.stderr.flush()
         sys.exit(0)
     run()
-

@@ -11,7 +11,7 @@ utilpath = sys.path[0] + "/../Go4/"
 sys.path.append(utilpath)
 utilpath = sys.path[0] + "/../util/"
 sys.path.append(utilpath)
-from gtp_connection import GtpConnection  
+from gtp_connection import GtpConnection
 from board_util_go4 import GoBoardUtilGo4
 import numpy as np
 import re
@@ -37,42 +37,45 @@ class GtpConnectionGo5(GtpConnection):
         self.argmap["prior_knowledge"] = (0, 'Usage: prior_knowledge')
         self.argmap["genmove"] = (1, 'Usage: genmove {w,b}')
 
-    
+
     def genmove_cmd(self,args):
         self.respond("working")
 
     def prior_knowledge_cmd(self,args):
         move, probs = self.probability(self.board)
 
-        print(probs)
+        # print(probs)
 
 
-        # sim_probs = self.sim(probs, move)
-        # # win_rate = self.winrates(probs, move)
+        sim_probs = self.sim(probs, move)
+        win_rate = self.winrates(probs, move)
 
-        # for elem in move:
-        #     print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], probs[elem])
-
-
-    def sim(self, probs2, move):
-
-        max_prob = max(probs2)
         for elem in move:
-            probs2[elem] = round(10*probs2[elem]/max_prob)
+            print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
+
+
+    def sim(self, probs, move):
+
+        probs2 = np.zeros(self.board.maxpoint)
+        max_prob = max(probs)
+        for elem in move:
+            probs2[elem] = round(10*probs[elem]/max_prob)
 
         return probs2
 
-    def winrates(self, probs3, move):
+    def winrates(self, probs, move):
         min_val = 0
-        max_val = max(probs3)
+        max_val = max(probs)
 
         a = 0.5
         b = 1
 
-        for elem in move:
-            probs3[elem] = self.convert(probs3[elem], min_val, max_val, a, b)
+        probs2 = np.zeros(self.board.maxpoint)
 
-        return probs3
+        for elem in move:
+            probs2[elem] = self.convert(probs[elem], min_val, max_val, a, b)
+
+        return probs2
 
     def convert(self, x, min_val, max_val, a, b):
         final_value = (((b-a)*(x-min_val))/(max_val-min_val)) + a

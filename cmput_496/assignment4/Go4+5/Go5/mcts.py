@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
 """
 This function is loosely based on https://github.com/Rochester-NRT/RocAlphaGo/blob/develop/AlphaGo/mcts.py
 """
@@ -8,7 +8,7 @@ import random
 from board_util_go4 import GoBoardUtilGo4, BLACK, WHITE
 PASS = 'pass'
 
-def uct_val(node, child, exploration, max_flag): 
+def uct_val(node, child, exploration, max_flag):
     if child._n_visits == 0:
         return float("inf")
     if max_flag:
@@ -49,7 +49,7 @@ class TreeNode(object):
 
     def select(self, exploration, max_flag):
         """
-        Select move among children that gives maximizes UCT. 
+        Select move among children that gives maximizes UCT.
         If number of visits are zero for a node, value for that node is infinite, so definitely will get selected
 
         It uses: argmax(child_num_black_wins/child_num_vists + C * sqrt(2 * ln * Parent_num_vists/child_num_visits) )
@@ -57,14 +57,14 @@ class TreeNode(object):
         A tuple of (move, next_node)
         """
         return max(self._children.items(), key=lambda items:uct_val(self, items[1], exploration, max_flag))
-           
-        
+
+
     def update(self, leaf_value):
         """
         Update node values from leaf evaluation.
         Arguments:
         leaf_value -- the value of subtree evaluation from the current player's perspective.
-        
+
         Returns:
         None
         """
@@ -108,17 +108,17 @@ class MCTS(object):
         Arguments:
         board -- a copy of the board.
         color -- color to play
-        
+
 
         Returns:
         None
         """
-        node = self._root 
+        node = self._root
         # This will be True only once for the root
         if not node._expanded:
             node.expand(board, color)
         while not node.is_leaf():
-            # Greedily select next move.                
+            # Greedily select next move.
             max_flag = color == BLACK
             move, next_node = node.select(self.exploration,max_flag)
             if move!=PASS:
@@ -126,14 +126,14 @@ class MCTS(object):
             if move == PASS:
                 move = None
             board.move(move, color)
-            color = GoBoardUtilGo4.opponent(color) 
+            color = GoBoardUtilGo4.opponent(color)
             node = next_node
         assert node.is_leaf()
         if not node._expanded:
             node.expand(board, color)
 
         assert board.current_player == color
-        leaf_value = self._evaluate_rollout(board, color)  
+        leaf_value = self._evaluate_rollout(board, color)
         # Update value and visit count of nodes in this traversal.
         node.update_recursive(leaf_value)
 
@@ -148,7 +148,7 @@ class MCTS(object):
                 limit=self.limit,
                 simulation_policy=self.simulation_policy,
                 use_pattern = self.use_pattern,
-                check_selfatari= self.check_selfatari)        
+                check_selfatari= self.check_selfatari)
         if winner == BLACK:
             return 1
         else:
@@ -183,7 +183,7 @@ class MCTS(object):
         for n in range(num_simulation):
             board_copy = board.copy()
             self._playout(board_copy, toplay)
-        # choose a move that has the most visit 
+        # choose a move that has the most visit
         moves_ls =  [(move, node._n_visits) for move, node in self._root._children.items()]
         if not moves_ls:
             return None
@@ -195,7 +195,7 @@ class MCTS(object):
             return None
         assert board.check_legal(move[0], toplay)
         return move[0]
-        
+
     def update_with_move(self, last_move):
         """
         Step forward in the tree, keeping everything we already know about the subtree, assuming
@@ -211,7 +211,7 @@ class MCTS(object):
     def good_print(self, board, node, color, num_nodes):
         cboard = board.copy()
         sys.stderr.write("\nTaking a tour of selection policy in tree! \n\n")
-        sys.stderr.write(cboard.get_twoD_board())       
+        sys.stderr.write(cboard.get_twoD_board())
         sys.stderr.flush()
         while not node.is_leaf():
             if node._move != None:
@@ -219,7 +219,7 @@ class MCTS(object):
                     pointString = board.point_to_string(move)
                 else:
                     pointString = node._move
-            else: 
+            else:
                 pointString = 'Root'
             sys.stderr.write("\nMove: {} Numebr of children {}, Number of visits: {}\n"
                 .format(pointString,len(node._children),node._n_visits))
@@ -246,7 +246,7 @@ class MCTS(object):
                         sys.stderr.write("\nChild point:{} ;UCT Value {}; Number of visits: {}; Number of Black wins: {} \n"
                             .format(move, child_val, child_node._n_visits, child_node._black_wins))
                         sys.stderr.flush()
-            # Greedily select next move.                
+            # Greedily select next move.
             max_flag = color == BLACK
             move, next_node = node.select(self.exploration,max_flag)
             if move==PASS:
@@ -257,11 +257,11 @@ class MCTS(object):
             sys.stderr.write("\nBoard in simulation after chosing child {} in tree. \n".format(pointString))
             sys.stderr.write(cboard.get_twoD_board())
             sys.stderr.flush()
-            color = GoBoardUtilGo4.opponent(color) 
+            color = GoBoardUtilGo4.opponent(color)
             node = next_node
         assert node.is_leaf()
         cboard.current_player = color
-        leaf_value = self._evaluate_rollout(cboard, color)  
+        leaf_value = self._evaluate_rollout(cboard, color)
         sys.stderr.write("\nWinner of simulation is: {} color, Black is 0 an \n".format(leaf_value))
         sys.stderr.flush()
 
@@ -279,7 +279,7 @@ class MCTS(object):
                 wins = node._n_visits - node._black_wins
             visits = node._n_visits
             if visits:
-                win_rate = round(float(wins)/visits,2)    
+                win_rate = round(float(wins)/visits,2)
             else:
                 win_rate = 0
             if move==PASS:
