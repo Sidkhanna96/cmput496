@@ -1,5 +1,6 @@
-#!/usr/bin/python3
+#!/anaconda/bin/python3
 import os, sys
+from gtp_connection_go5 import GtpConnectionGo5
 utilpath = sys.path[0] + "/../util/"
 sys.path.append(utilpath)
 utilpath = sys.path[0] + "/../Go4/"
@@ -108,7 +109,7 @@ def run():
     start the gtp connection and wait for commands.
     """
     board = SimpleGoBoard(7)
-    con = GtpConnection(Go5Player(num_simulation), board)
+    con = GtpConnectionGo5(Go5Player(num_simulation), board)
     con.start_connection()
 
 if __name__=='__main__':
