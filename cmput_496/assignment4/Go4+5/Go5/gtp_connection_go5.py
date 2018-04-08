@@ -43,23 +43,42 @@ class GtpConnectionGo5(GtpConnection):
 
     def prior_knowledge_cmd(self,args):
         move, probs = self.probability(self.board)
-
-        # print(probs)
-
-
         sim_probs = self.sim(probs, move)
         win_rate = self.winrates(probs, move)
 
+        probs4 = np.zeros(self.board.maxpoint)
         for elem in move:
             print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
+            probs4[elem] = int(round(sim_probs[elem] * win_rate[elem]))
 
+        values2 = []
+        
+        for elem in move:
+            values = []
+            # print(elem)
+            elem2 = elem
+            if elem == 0:
+                elem2 = 'PASS'
+                # print((elem2), sim_probs[elem], probs4[elem])
+                values.append(elem2)
+                values.append(probs4[elem])
+                values.append(sim_probs[elem])
+                values2.append(values)
+            else:
+                # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], probs4[elem])
+                values.append(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)))
+                values.append(probs4[elem])
+                values.append(sim_probs[elem])
+                values2.append(values)
+
+        print(sorted((values2), key = lambda x:(-x[1], -x[2])))
 
     def sim(self, probs, move):
 
         probs2 = np.zeros(self.board.maxpoint)
         max_prob = max(probs)
         for elem in move:
-            probs2[elem] = round(10*probs[elem]/max_prob)
+            probs2[elem] = int(round(10*probs[elem]/max_prob))
 
         return probs2
 
@@ -92,23 +111,50 @@ class GtpConnectionGo5(GtpConnection):
 
         gamma_sum = 0.0
 
-        empty_points = board.get_empty_points()
-        # empty_points.append('pass')
+        legal_moves_broad = Feature.legal_moves_on_board(board)
+        legal_moves = []
 
-        color = board.current_player
+        for elem in legal_moves_broad:
+            if not board.is_eye(elem, board.current_player):
+                legal_moves.append(elem)
+
+        legal_moves.append(0)
 
         probs = np.zeros(board.maxpoint)
-        # return board.maxpoint
 
-        all_board_features = Feature.find_all_features(board)
+        feature_legal_move = Feature.find_all_features(board)
 
-        for move in empty_points:
-            if board.check_legal(move, color) and not board.is_eye(move, color):
-                moves.append(move)
-                probs[move] = Feature.compute_move_gamma(Features_weight, all_board_features[move])
-                gamma_sum += probs[move]
-        if len(moves) != 0:
+        for move in legal_moves:
+            if move == 0:
+                probs[move] = Feature.compute_move_gamma(Features_weight, feature_legal_move['PASS'])
+            else:   
+                probs[move] = Feature.compute_move_gamma(Features_weight, feature_legal_move[move])
+            gamma_sum += probs[move]
+
+        if len(legal_moves) != 0.0:
             assert gamma_sum != 0.0
-            for m in moves:
-                probs[m] = probs[m] / gamma_sum
-        return (moves), (probs)
+            for m in legal_moves:
+                probs[m] = probs[m]/gamma_sum
+
+        return legal_moves, probs
+
+
+        # empty_points = board.get_empty_points()
+
+        # color = board.current_player
+
+        # probs = np.zeros(board.maxpoint)
+        # # return board.maxpoint
+
+        # all_board_features = Feature.find_all_features(board)
+
+        # for move in empty_points:
+        #     if board.check_legal(move, color) and not board.is_eye(move, color):
+        #         moves.append(move)
+        #         probs[move] = Feature.compute_move_gamma(Features_weight, all_board_features[move])
+        #         gamma_sum += probs[move]
+        # if len(moves) != 0:
+        #     assert gamma_sum != 0.0
+        #     for m in moves:
+        #         probs[m] = probs[m] / gamma_sum
+        # return (moves), (probs)
