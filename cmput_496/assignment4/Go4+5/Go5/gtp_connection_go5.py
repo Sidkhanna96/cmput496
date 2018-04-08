@@ -47,13 +47,13 @@ class GtpConnectionGo5(GtpConnection):
         win_rate = self.winrates(probs, move)
 
         # print("winrates " + str(win_rate))
-        probs4 = np.zeros(self.board.maxpoint)
+        wins = np.zeros(self.board.maxpoint)
         for elem in move:
             print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
-            probs4[elem] = int(round(sim_probs[elem] * win_rate[elem]))
+            wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
             # after calculating wins, we need to round simulation
             sim_probs[elem] = int(round(sim_probs[elem]))
-            # probs4[elem] = sim_probs[elem] * win_rate[elem]
+            # wins[elem] = sim_probs[elem] * win_rate[elem]
 
         values2 = []
 
@@ -63,15 +63,15 @@ class GtpConnectionGo5(GtpConnection):
             elem2 = elem
             if elem == 0:
                 elem2 = 'PASS'
-                # print((elem2), sim_probs[elem], probs4[elem])
+                # print((elem2), sim_probs[elem], wins[elem])
                 values.append(elem2)
-                values.append(probs4[elem])
+                values.append(wins[elem])
                 values.append(sim_probs[elem])
                 values2.append(values)
             else:
-                # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], probs4[elem])
+                # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], wins[elem])
                 values.append(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)))
-                values.append(probs4[elem])
+                values.append(wins[elem])
                 values.append(sim_probs[elem])
                 values2.append(values)
 
