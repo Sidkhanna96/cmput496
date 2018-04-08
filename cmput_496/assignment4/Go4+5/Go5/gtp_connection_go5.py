@@ -49,7 +49,7 @@ class GtpConnectionGo5(GtpConnection):
         # print("winrates " + str(win_rate))
         wins = np.zeros(self.board.maxpoint)
         for elem in move:
-            print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
+            # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
             wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
             # after calculating wins, we need to round simulation
             sim_probs[elem] = int(round(sim_probs[elem]))
@@ -75,7 +75,43 @@ class GtpConnectionGo5(GtpConnection):
                 values.append(sim_probs[elem])
                 values2.append(values)
 
-        print(sorted((values2), key = lambda x:(-x[1], -x[2])))
+        self.respond(sorted((values2), key = lambda x:(-x[1], -x[2])))
+
+    def prior_knowledge_cmd_return(self):
+        move, probs = self.probability(self.board)
+        sim_probs = self.sim(probs, move)
+        win_rate = self.winrates(probs, move)
+
+        # print("winrates " + str(win_rate))
+        wins = np.zeros(self.board.maxpoint)
+        for elem in move:
+            # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
+            wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
+            # after calculating wins, we need to round simulation
+            sim_probs[elem] = int(round(sim_probs[elem]))
+            # wins[elem] = sim_probs[elem] * win_rate[elem]
+
+        values2 = []
+
+        for elem in move:
+            values = []
+            # print(elem)
+            elem2 = elem
+            if elem == 0:
+                elem2 = 'PASS'
+                # print((elem2), sim_probs[elem], wins[elem])
+                values.append(elem2)
+                values.append(wins[elem])
+                values.append(sim_probs[elem])
+                values2.append(values)
+            else:
+                # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], wins[elem])
+                values.append(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)))
+                values.append(wins[elem])
+                values.append(sim_probs[elem])
+                values2.append(values)
+
+        return sorted((values2), key = lambda x:(-x[1], -x[2]))
 
     def sim(self, probs, move):
 
@@ -108,6 +144,7 @@ class GtpConnectionGo5(GtpConnection):
     def probability(self, board):
         from feature import Features_weight
         from feature import Feature
+        # print(Features_weight)
         assert len(Features_weight) != 0
 
         #legal moves

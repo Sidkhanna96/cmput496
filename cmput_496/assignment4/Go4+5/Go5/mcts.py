@@ -4,6 +4,8 @@ This function is loosely based on https://github.com/Rochester-NRT/RocAlphaGo/bl
 """
 import os, sys
 import numpy as np
+from gtp_connection_go5 import GtpConnectionGo5
+
 import random
 from board_util_go4 import GoBoardUtilGo4, BLACK, WHITE
 PASS = 'pass'
@@ -37,15 +39,42 @@ class TreeNode(object):
         """
         Expands tree by creating new children.
         """
+        print("jwfkljhwefjhejwf \n\n\n\n")
         moves = board.get_empty_points()
         for move in moves:
             if move not in self._children:
                 if board.check_legal(move, color) and not board.is_eye(move, color):
                     self._children[move] = TreeNode(self)
                     self._children[move]._move = move
+                    
+                    prob_moves = prior_knowledge_cmd_return(self)
+                    print(prob_moves)
+
+                    self._black_wins = 0
+                    self._n_visits = 0
+        
         self._children[PASS] = TreeNode(self)
         self._children[PASS]._move = PASS
+
+        prob_moves = prior_knowledge_cmd_return(self)
+        print(prob_moves)
+        
+        self._black_wins = 0
+        self._n_visits = 0
         self._expanded = True
+        
+
+        # black_wins_root = self._black_wins
+        # n_visits_root = self._n_visits
+        # while self.parent is not None:
+        #     new = self.parent
+        
+        # new._black_wins += black_wins_root
+        # new._n_visits += n_visits_root
+
+
+            
+
 
     def select(self, exploration, max_flag):
         """
