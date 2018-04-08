@@ -46,13 +46,17 @@ class GtpConnectionGo5(GtpConnection):
         sim_probs = self.sim(probs, move)
         win_rate = self.winrates(probs, move)
 
+        # print("winrates " + str(win_rate))
         probs4 = np.zeros(self.board.maxpoint)
         for elem in move:
             print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
             probs4[elem] = int(round(sim_probs[elem] * win_rate[elem]))
+            # after calculating wins, we need to round simulation
+            sim_probs[elem] = int(round(sim_probs[elem]))
+            # probs4[elem] = sim_probs[elem] * win_rate[elem]
 
         values2 = []
-        
+
         for elem in move:
             values = []
             # print(elem)
@@ -78,7 +82,7 @@ class GtpConnectionGo5(GtpConnection):
         probs2 = np.zeros(self.board.maxpoint)
         max_prob = max(probs)
         for elem in move:
-            probs2[elem] = int(round(10*probs[elem]/max_prob))
+            probs2[elem] = 10*probs[elem]/max_prob
 
         return probs2
 
@@ -127,7 +131,7 @@ class GtpConnectionGo5(GtpConnection):
         for move in legal_moves:
             if move == 0:
                 probs[move] = Feature.compute_move_gamma(Features_weight, feature_legal_move['PASS'])
-            else:   
+            else:
                 probs[move] = Feature.compute_move_gamma(Features_weight, feature_legal_move[move])
             gamma_sum += probs[move]
 
