@@ -35,33 +35,66 @@ class TreeNode(object):
         self._expanded = False
         self._move = None
 
-    def expand(self, board, color):
+    def expand(self, board, color, in_tree_knowledge):
         """
         Expands tree by creating new children.
         """
-        print("jwfkljhwefjhejwf \n\n\n\n")
-        moves = board.get_empty_points()
-        for move in moves:
-            if move not in self._children:
-                if board.check_legal(move, color) and not board.is_eye(move, color):
-                    self._children[move] = TreeNode(self)
-                    self._children[move]._move = move
+
+        if in_tree_knowledge == 'probabilistic':
+        	#initialize it to values
+        	values = GtpConnectionGo5.prior_knowledge_cmd_return()
+
+        	moves = board.get_empty_points()
+	        for move in moves:
+	            if move not in self._children:
+	                if board.check_legal(move, color) and not board.is_eye(move, color):
+	                    self._children[move] = TreeNode(self)
+	                    self._children[move]._move = move
+	                    for elem in values:
+	                    	if move == elem[0]:
+	                    		self._children[move]._black_wins = elem[1]
+	                    		self._children[move]._n_visits = elem[2]
+	        self._children[PASS] = TreeNode(self)
+	        self._children[PASS]._move = PASS
+	        self._expanded = True
+	        for elem in values:
+	        	if elem[0] =='Pass':
+	        		self._children[PASS]._black_wins = elem[1]
+	        		self._children[PASS]._n_visits = elem[2]
+
+        else:
+        	moves = board.get_empty_points()
+	        for move in moves:
+	            if move not in self._children:
+	                if board.check_legal(move, color) and not board.is_eye(move, color):
+	                    self._children[move] = TreeNode(self)
+	                    self._children[move]._move = move
+	        self._children[PASS] = TreeNode(self)
+	        self._children[PASS]._move = PASS
+	        self._expanded = True
+
+        # moves = board.get_empty_points()
+        # for move in moves:
+        #     if move not in self._children:
+        #         if board.check_legal(move, color) and not board.is_eye(move, color):
+        #             self._children[move] = TreeNode(self)
+        #             self._children[move]._move = move
                     
-                    prob_moves = prior_knowledge_cmd_return(self)
-                    print(prob_moves)
+        #             prob_moves = prior_knowledge_cmd_return(self)
+        #             print(prob_moves)
 
-                    self._black_wins = 0
-                    self._n_visits = 0
+        #             self._black_wins = 0
+        #             self._n_visits = 0
         
-        self._children[PASS] = TreeNode(self)
-        self._children[PASS]._move = PASS
+        # self._children[PASS] = TreeNode(self)
+        # self._children[PASS]._move = PASS
 
-        prob_moves = prior_knowledge_cmd_return(self)
-        print(prob_moves)
+        # prob_moves = prior_knowledge_cmd_return(self)
+        # print(prob_moves)
         
-        self._black_wins = 0
-        self._n_visits = 0
-        self._expanded = True
+        # self._black_wins = 0
+        # self._n_visits = 0
+        # self._expanded = True
         
 
         # black_wins_root = self._black_wins
@@ -128,7 +161,7 @@ class MCTS(object):
     def __init__(self):
         self._root = TreeNode(None)
         self.toplay = BLACK
-    def _playout(self, board, color):
+    def _playout(self, board, color, in_tree_knowledge):
         """
         Run a single playout from the root to the given depth, getting a value at the leaf and
         propagating it back through its parents. State is modified in-place, so a copy must be
@@ -145,7 +178,7 @@ class MCTS(object):
         node = self._root
         # This will be True only once for the root
         if not node._expanded:
-            node.expand(board, color)
+            node.expand(board, color, in_tree_knowledge)
         while not node.is_leaf():
             # Greedily select next move.
             max_flag = color == BLACK
@@ -159,7 +192,7 @@ class MCTS(object):
             node = next_node
         assert node.is_leaf()
         if not node._expanded:
-            node.expand(board, color)
+            node.expand(board, color, in_tree_knowledge)
 
         assert board.current_player == color
         leaf_value = self._evaluate_rollout(board, color)
