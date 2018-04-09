@@ -41,37 +41,40 @@ class TreeNode(object):
         """
 
         if in_tree_knowledge == 'probabilistic':
-        	#initialize it to values
-        	values = GtpConnectionGo5.prior_knowledge_cmd_return()
+            #initialize it to values
+            values = GtpConnectionGo5.prior_knowledge_cmd_return()
 
-        	moves = board.get_empty_points()
-	        for move in moves:
-	            if move not in self._children:
-	                if board.check_legal(move, color) and not board.is_eye(move, color):
-	                    self._children[move] = TreeNode(self)
-	                    self._children[move]._move = move
-	                    for elem in values:
-	                    	if move == elem[0]:
-	                    		self._children[move]._black_wins = elem[1]
-	                    		self._children[move]._n_visits = elem[2]
-	        self._children[PASS] = TreeNode(self)
-	        self._children[PASS]._move = PASS
-	        self._expanded = True
-	        for elem in values:
-	        	if elem[0] =='Pass':
-	        		self._children[PASS]._black_wins = elem[1]
-	        		self._children[PASS]._n_visits = elem[2]
+            moves = board.get_empty_points()
+            for move in moves:
+                if move not in self._children:
+                    if board.check_legal(move, color) and not board.is_eye(move, color):
+                        self._children[move] = TreeNode(self)
+                        self._children[move]._move = move
+                        for elem in values:
+                            if move == elem[0]:
+                                self._children[move]._black_wins = elem[1]
+                                self._children[move]._n_visits = elem[2]
+                                self._children[PASS] = TreeNode(self)
+                                self._children[PASS]._move = PASS
+                                self._expanded = True
+                                for elem in values:
+                                    if elem[0] =='Pass':
+                                        # print("hello" + str(elem))
+                                        self.respond(elem)
+                                        self._children[PASS]._black_wins = elem[1]
+                                        self._children[PASS]._n_visits = elem[2]
 
         else:
-        	moves = board.get_empty_points()
-	        for move in moves:
-	            if move not in self._children:
-	                if board.check_legal(move, color) and not board.is_eye(move, color):
-	                    self._children[move] = TreeNode(self)
-	                    self._children[move]._move = move
-	        self._children[PASS] = TreeNode(self)
-	        self._children[PASS]._move = PASS
-	        self._expanded = True
+            moves = board.get_empty_points()
+            for move in moves:
+                if move not in self._children:
+                    if board.check_legal(move, color) and not board.is_eye(move, color):
+                        self._children[move] = TreeNode(self)
+                        self._children[move]._move = move
+                        print(self._children[move]._black_wins, self._children[move]._n_visits)
+                        self._children[PASS] = TreeNode(self)
+                        self._children[PASS]._move = PASS
+                        self._expanded = True
 
         # moves = board.get_empty_points()
         # for move in moves:
@@ -79,34 +82,34 @@ class TreeNode(object):
         #         if board.check_legal(move, color) and not board.is_eye(move, color):
         #             self._children[move] = TreeNode(self)
         #             self._children[move]._move = move
-                    
+
         #             prob_moves = prior_knowledge_cmd_return(self)
         #             print(prob_moves)
 
         #             self._black_wins = 0
         #             self._n_visits = 0
-        
+
         # self._children[PASS] = TreeNode(self)
         # self._children[PASS]._move = PASS
 
         # prob_moves = prior_knowledge_cmd_return(self)
         # print(prob_moves)
-        
+
         # self._black_wins = 0
         # self._n_visits = 0
         # self._expanded = True
-        
+
 
         # black_wins_root = self._black_wins
         # n_visits_root = self._n_visits
         # while self.parent is not None:
         #     new = self.parent
-        
+
         # new._black_wins += black_wins_root
         # new._n_visits += n_visits_root
 
 
-            
+
 
 
     def select(self, exploration, max_flag):
