@@ -71,7 +71,7 @@ class TreeNode(object):
                     if board.check_legal(move, color) and not board.is_eye(move, color):
                         self._children[move] = TreeNode(self)
                         self._children[move]._move = move
-                        print(self._children[move]._black_wins, self._children[move]._n_visits)
+                        # print(self._children[move]._black_wins, self._children[move]._n_visits)
                         self._children[PASS] = TreeNode(self)
                         self._children[PASS]._move = PASS
                         self._expanded = True
@@ -247,7 +247,7 @@ class MCTS(object):
         self.in_tree_knowledge = in_tree_knowledge
         for n in range(num_simulation):
             board_copy = board.copy()
-            self._playout(board_copy, toplay)
+            self._playout(board_copy, toplay, in_tree_knowledge)
         # choose a move that has the most visit
         moves_ls =  [(move, node._n_visits) for move, node in self._root._children.items()]
         if not moves_ls:

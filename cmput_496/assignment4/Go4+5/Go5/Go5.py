@@ -56,7 +56,7 @@ class Go5Player():
         self.in_tree_knowledge = in_tree_knowledge
         self.parent = None
 
-    def sample_run(self, board, toplay, print_info=False):
+    def sample_run(self, board, toplay, in_tree_knowledge, print_info=False):
         self.MCTS.exploration = self.exploration
         self.MCTS.limit = self.limit
         self.MCTS.toplay = toplay
@@ -65,7 +65,7 @@ class Go5Player():
 
         for n in range(self.num_simulation):
             board_copy = board.copy()
-            self.MCTS._playout(board_copy, toplay)
+            self.MCTS._playout(board_copy, toplay, in_tree_knowledge)
 
         if print_info:
             self.MCTS.good_print(board, self.MCTS._root, toplay,self.num_nodes)

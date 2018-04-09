@@ -223,11 +223,51 @@ class GtpConnectionGo5(GtpConnection):
         #         probs[m] = probs[m] / gamma_sum
         # return (moves), (probs)
 
-    def genmove_cmd(self,args):
-        moves = self.prior_knowledge_cmd_return()
-        if moves is not None:
-            # self.respond(moves[0][0])
-            if moves[0][0] == 'Pass':
-                self.respond('pass')
-            else:
-                self.respond(moves[0][0])
+    # def genmove_cmd(self,args):
+    #     moves = self.prior_knowledge_cmd_return()
+    #     if moves is not None:
+    #         # self.respond(moves[0][0])
+    #         if moves[0][0] == 'Pass':
+    #             self.respond('pass')
+    #         else:
+    #             self.respond(moves[0][0])
+
+
+    def genmove_cmd(self, args):
+        """
+        generate a move for the specified color
+
+        Arguments
+        ---------
+        args[0] : {'b','w'}
+            the color to generate a move for
+            it gets converted to  Black --> 1 White --> 2
+            color : {0,1}
+            board_color : {'b','w'}
+        """
+        try:
+            board_color = args[0].lower()
+            color = GoBoardUtilGo4.color_to_int(board_color)
+            self.debug_msg("Board:\n{}\nko: {}\n".format(str(self.board.get_twoD_board()),
+                                                          self.board.ko_constraint))
+            move = self.go_engine.get_move(self.board, color)
+            if move is None:
+                self.respond("pass")
+                return
+
+            if not self.board.check_legal(move, color):
+                move = self.board._point_to_coord(move)
+                board_move = GoBoardUtilGo4.format_point(move)
+                self.respond("Illegal move: {}".format(board_move))
+                raise RuntimeError("Illegal move given by engine")
+
+            # move is legal; play it
+            self.board.move(move,color)
+
+            self.debug_msg("Move: {}\nBoard: \n{}\n".format(move, str(self.board.get_twoD_board())))
+            move = self.board._point_to_coord(move)
+            board_move = GoBoardUtilGo4.format_point(move)
+            self.respond(board_move)
+        except Exception as e:
+            self.respond('Error: {}'.format(str(e)))
+            raise
