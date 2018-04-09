@@ -57,7 +57,7 @@ class GtpConnectionGo5(GtpConnection):
                         move2 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2+1]))
 
                         if(move1[0]>move2[0]):
-                            move[num2] , move[num2+1] = move[num2+1] , move[num2]    
+                            move[num2] , move[num2+1] = move[num2+1] , move[num2]
         for elem in move:
             # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
             wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
@@ -71,18 +71,18 @@ class GtpConnectionGo5(GtpConnection):
             # print(elem)
             elem2 = elem
             if elem == 0:
-                elem2 = 'PASS'
+                elem2 = 'Pass'
                 # print((elem2), sim_probs[elem], wins[elem])
                 values.append(elem2)
                 values.append(int(wins[elem]))
                 values.append(int(sim_probs[elem]))
-      
+
             else:
                 # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], wins[elem])
                 values.append(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)))
                 values.append(int(wins[elem]))
                 values.append(int(sim_probs[elem]))
-      
+
         str1 = ' '.join(str(e) for e in values)
         self.respond(''.join(str1))
 
@@ -93,7 +93,7 @@ class GtpConnectionGo5(GtpConnection):
 
         # print("winrates " + str(win_rate))
         wins = np.zeros(self.board.maxpoint)
-        
+
         for num1 in range(len(move)):
             for num2 in range(0, len(move)-num1-1):
                 if move[num2] != move[num2+1]:
@@ -106,7 +106,7 @@ class GtpConnectionGo5(GtpConnection):
                         if(move1[0]>move2[0]):
                             move[num2] , move[num2+1] = move[num2+1] , move[num2]
 
-    
+
         for elem in move:
             # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
             wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
@@ -121,7 +121,7 @@ class GtpConnectionGo5(GtpConnection):
             # print(elem)
             elem2 = elem
             if elem == 0:
-                elem2 = 'PASS'
+                elem2 = 'Pass'
                 # print((elem2), sim_probs[elem], wins[elem])
                 values.append(elem2)
                 values.append(wins[elem])
@@ -226,4 +226,8 @@ class GtpConnectionGo5(GtpConnection):
     def genmove_cmd(self,args):
         moves = self.prior_knowledge_cmd_return()
         if moves is not None:
-            self.respond(moves[0][0])
+            # self.respond(moves[0][0])
+            if moves[0][0] == 'Pass':
+                self.respond('pass')
+            else:
+                self.respond(moves[0][0])
