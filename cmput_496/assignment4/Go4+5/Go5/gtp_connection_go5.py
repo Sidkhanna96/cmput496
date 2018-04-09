@@ -85,8 +85,6 @@ class GtpConnectionGo5(GtpConnection):
 
         str1 = ' '.join(str(e) for e in values)
         self.respond(''.join(str1))
-        self.respond(self.prior_knowledge_cmd_return()[0][1])
-        self.respond(int(self.prior_knowledge_cmd_return()[0][1]))
 
     def prior_knowledge_cmd_return(self):
         move, probs = self.probability(self.board)
