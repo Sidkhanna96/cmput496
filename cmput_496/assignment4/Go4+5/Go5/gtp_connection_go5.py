@@ -38,9 +38,6 @@ class GtpConnectionGo5(GtpConnection):
         self.argmap["genmove"] = (1, 'Usage: genmove {w,b}')
 
 
-    def genmove_cmd(self,args):
-        self.respond("working")
-
     def prior_knowledge_cmd(self,args):
         move, probs = self.probability(self.board)
         sim_probs = self.sim(probs, move)
@@ -48,6 +45,19 @@ class GtpConnectionGo5(GtpConnection):
 
         # print("winrates " + str(win_rate))
         wins = np.zeros(self.board.maxpoint)
+
+
+        for num1 in range(len(move)):
+            for num2 in range(0, len(move)-num1-1):
+                if move[num2] != move[num2+1]:
+                    if win_rate[move[num2]] < win_rate[move[num2+1]]:
+                        move[num2], move[num2+1] = move[num2+1], move[num2]
+                    elif win_rate[move[num2]]==win_rate[move[num2+1]]:
+                        move1 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2]))
+                        move2 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2+1]))
+
+                        if(move1[0]>move2[0]):
+                            move[num2] , move[num2+1] = move[num2+1] , move[num2]    
         for elem in move:
             # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
             wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
@@ -55,27 +65,26 @@ class GtpConnectionGo5(GtpConnection):
             sim_probs[elem] = int(round(sim_probs[elem]))
             # wins[elem] = sim_probs[elem] * win_rate[elem]
 
-        values2 = []
+        values = []
 
         for elem in move:
-            values = []
             # print(elem)
             elem2 = elem
             if elem == 0:
                 elem2 = 'PASS'
                 # print((elem2), sim_probs[elem], wins[elem])
                 values.append(elem2)
-                values.append(wins[elem])
-                values.append(sim_probs[elem])
-                values2.append(values)
+                values.append(int(wins[elem]))
+                values.append(int(sim_probs[elem]))
+      
             else:
                 # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], wins[elem])
                 values.append(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)))
-                values.append(wins[elem])
-                values.append(sim_probs[elem])
-                values2.append(values)
-
-        self.respond(sorted((values2), key = lambda x:(-x[1], -x[2])))
+                values.append(int(wins[elem]))
+                values.append(int(sim_probs[elem]))
+      
+        str1 = ' '.join(str(e) for e in values)
+        self.respond(''.join(str1))
 
     def prior_knowledge_cmd_return(self):
         move, probs = self.probability(self.board)
@@ -84,6 +93,20 @@ class GtpConnectionGo5(GtpConnection):
 
         # print("winrates " + str(win_rate))
         wins = np.zeros(self.board.maxpoint)
+        
+        for num1 in range(len(move)):
+            for num2 in range(0, len(move)-num1-1):
+                if move[num2] != move[num2+1]:
+                    if win_rate[move[num2]] < win_rate[move[num2+1]]:
+                        move[num2], move[num2+1] = move[num2+1], move[num2]
+                    elif win_rate[move[num2]]==win_rate[move[num2+1]]:
+                        move1 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2]))
+                        move2 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2+1]))
+
+                        if(move1[0]>move2[0]):
+                            move[num2] , move[num2+1] = move[num2+1] , move[num2]
+
+    
         for elem in move:
             # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
             wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
@@ -111,7 +134,7 @@ class GtpConnectionGo5(GtpConnection):
                 values.append(sim_probs[elem])
                 values2.append(values)
 
-        return sorted((values2), key = lambda x:(-x[1], -x[2]))
+        return ((values2))
 
     def sim(self, probs, move):
 
@@ -199,3 +222,8 @@ class GtpConnectionGo5(GtpConnection):
         #     for m in moves:
         #         probs[m] = probs[m] / gamma_sum
         # return (moves), (probs)
+
+    def genmove_cmd(self,args):
+        moves = self.prior_knowledge_cmd_return()
+        if moves is not None:
+            self.respond(moves[0][0])
