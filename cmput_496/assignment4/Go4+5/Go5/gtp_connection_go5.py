@@ -40,8 +40,8 @@ class GtpConnectionGo5(GtpConnection):
 
     def prior_knowledge_cmd(self,args):
         move, probs = self.probability(self.board)
-        sim_probs = self.sim(probs, move)
-        win_rate = self.winrates(probs, move)
+        sim_probs = self.sim(probs, move, self.board)
+        win_rate = self.winrates(probs, move, self.board)
 
         # print("winrates " + str(win_rate))
         wins = np.zeros(self.board.maxpoint)
@@ -86,76 +86,26 @@ class GtpConnectionGo5(GtpConnection):
         str1 = ' '.join(str(e) for e in values)
         self.respond(''.join(str1))
 
-    def prior_knowledge_cmd_return(self):
-        move, probs = self.probability(self.board)
-        sim_probs = self.sim(probs, move)
-        win_rate = self.winrates(probs, move)
+    def sim(self, probs, move, board):
 
-        # print("winrates " + str(win_rate))
-        wins = np.zeros(self.board.maxpoint)
-
-        for num1 in range(len(move)):
-            for num2 in range(0, len(move)-num1-1):
-                if move[num2] != move[num2+1]:
-                    if win_rate[move[num2]] < win_rate[move[num2+1]]:
-                        move[num2], move[num2+1] = move[num2+1], move[num2]
-                    elif win_rate[move[num2]]==win_rate[move[num2+1]]:
-                        move1 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2]))
-                        move2 = GoBoardUtilGo4.format_point(self.board._point_to_coord(move[num2+1]))
-
-                        if(move1[0]>move2[0]):
-                            move[num2] , move[num2+1] = move[num2+1] , move[num2]
-
-
-        for elem in move:
-            # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)), sim_probs[elem], win_rate[elem])
-            wins[elem] = int(round(sim_probs[elem] * win_rate[elem]))
-            # after calculating wins, we need to round simulation
-            sim_probs[elem] = int(round(sim_probs[elem]))
-            # wins[elem] = sim_probs[elem] * win_rate[elem]
-
-        values2 = []
-
-        for elem in move:
-            values = []
-            # print(elem)
-            elem2 = elem
-            if elem == 0:
-                elem2 = 'Pass'
-                # print((elem2), sim_probs[elem], wins[elem])
-                values.append(elem2)
-                values.append(wins[elem])
-                values.append(sim_probs[elem])
-                values2.append(values)
-            else:
-                # print(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem2)), sim_probs[elem], wins[elem])
-                values.append(GoBoardUtilGo4.format_point(self.board._point_to_coord(elem)))
-                values.append(wins[elem])
-                values.append(sim_probs[elem])
-                values2.append(values)
-
-        return ((values2))
-
-    def sim(self, probs, move):
-
-        probs2 = np.zeros(self.board.maxpoint)
+        probs2 = np.zeros(board.maxpoint)
         max_prob = max(probs)
         for elem in move:
             probs2[elem] = 10*probs[elem]/max_prob
 
         return probs2
 
-    def winrates(self, probs, move):
+    def winrates(self, probs, move, board):
         min_val = 0
         max_val = max(probs)
 
         a = 0.5
         b = 1
 
-        probs2 = np.zeros(self.board.maxpoint)
+        probs2 = np.zeros(board.maxpoint)
 
         for elem in move:
-            probs2[elem] = self.convert(probs[elem], min_val, max_val, a, b)
+            probs2[elem] = GtpConnectionGo5.convert(self, probs[elem], min_val, max_val, a, b)
 
         return probs2
 
